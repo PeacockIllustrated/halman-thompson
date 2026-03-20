@@ -61,8 +61,8 @@ export const PRODUCT_TYPES: ProductTypeConfig[] = [
     hasLogoUpload: false,
     modelType: "surface_sheet",
     sortOrder: 2,
-    isActive: false,
-    phase: 2,
+    isActive: true,
+    phase: 1,
   },
   {
     id: "bar_top",

@@ -69,13 +69,21 @@ export function FinishSelector() {
                   : "hover:bg-ht-dark/5"
               )}
             >
-              <div
-                className={cn(
-                  "h-12 w-12 rounded-full shadow-inner transition-transform group-hover:scale-110",
-                  METAL_COLORS[finish.baseMetal]
-                )}
-                style={{ opacity: finish.isAged ? 0.8 : 1 }}
-              />
+              {!finish.swatchImageUrl.includes("placeholder") ? (
+                <img
+                  src={finish.swatchImageUrl}
+                  alt={finish.name}
+                  className="h-12 w-12 rounded-full object-cover shadow-inner transition-transform group-hover:scale-110"
+                />
+              ) : (
+                <div
+                  className={cn(
+                    "h-12 w-12 rounded-full shadow-inner transition-transform group-hover:scale-110",
+                    METAL_COLORS[finish.baseMetal]
+                  )}
+                  style={{ opacity: finish.isAged ? 0.8 : 1 }}
+                />
+              )}
               <span className="text-center text-xs font-medium leading-tight text-ht-dark/80">
                 {finish.name}
               </span>

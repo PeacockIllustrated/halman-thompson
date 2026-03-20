@@ -13,9 +13,9 @@ const PRODUCT_CATEGORIES = [
   {
     id: "worktop",
     name: "Worktops",
-    description: "Bespoke metal worktops and countertops",
-    startingPrice: 280,
-    active: false,
+    description: "Handcrafted metal worktops & countertops with returns, upstands, and artisan finishes",
+    startingPrice: 350,
+    active: true,
   },
   {
     id: "bar_top",

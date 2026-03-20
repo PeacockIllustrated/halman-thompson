@@ -9,7 +9,26 @@ import type {
   SignageConfig,
   ConfigSnapshot,
   PanelLayout,
+  WorktopConfig,
 } from "@/types";
+
+export const DEFAULT_WORKTOP_CONFIG: WorktopConfig = {
+  cornerRadius: 12,
+  frontReturn: { enabled: true, depth: 45 },
+  backUpstand: { enabled: true, depth: 100 },
+  backReturn: { enabled: false, depth: 45 },
+  leftReturn: { enabled: false, depth: 45 },
+  rightReturn: { enabled: false, depth: 45 },
+  cutout: {
+    enabled: false,
+    shape: "rectangle",
+    width: 450,
+    depth: 350,
+    offsetX: 0,
+    offsetZ: 0,
+    returns: { enabled: true, depth: 30 },
+  },
+};
 
 /**
  * Calculate the panel layout when dimensions exceed the max single sheet size.
@@ -71,6 +90,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
   mountingType: "none",
   lacquerType: "matte",
   signageConfig: null,
+  worktopConfig: DEFAULT_WORKTOP_CONFIG,
   calculatedPrice: null,
   priceBreakdown: null,
   isPriceLoading: false,
@@ -135,6 +155,10 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
     });
   },
 
+  setWorktopConfig: (config: WorktopConfig) => {
+    set({ worktopConfig: config, calculatedPrice: null });
+  },
+
   setViewMode: (mode: ViewMode) => {
     set({ viewMode: mode });
   },
@@ -187,6 +211,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
       mountingType: "none",
       lacquerType: "matte",
       signageConfig: null,
+      worktopConfig: DEFAULT_WORKTOP_CONFIG,
       calculatedPrice: null,
       priceBreakdown: null,
       isPriceLoading: false,

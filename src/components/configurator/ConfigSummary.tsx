@@ -20,7 +20,14 @@ export function ConfigSummary() {
         <SummaryRow label="Product" value={productType.replace(/_/g, " ")} />
         <SummaryRow label="Finish" value={selectedFinish?.name ?? "Not selected"} />
         <SummaryRow label="Width" value={`${width}mm`} />
-        <SummaryRow label="Height" value={`${height}mm`} />
+        <SummaryRow
+          label={
+            productType === "worktop" || productType === "bar_top" || productType === "table_top"
+              ? "Depth"
+              : "Height"
+          }
+          value={`${height}mm`}
+        />
         <SummaryRow label="Thickness" value={`${thickness}mm`} />
         <SummaryRow label="Mounting" value={mountingType.replace(/_/g, " ")} />
         {panelCount > 1 && (

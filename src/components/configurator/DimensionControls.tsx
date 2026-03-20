@@ -38,6 +38,10 @@ export function DimensionControls() {
   if (!product) return null;
 
   const isMultiPanel = requiresMultiPanel(width, height);
+  const heightLabel =
+    productType === "worktop" || productType === "bar_top" || productType === "table_top"
+      ? "Depth"
+      : "Height";
 
   return (
     <div className="space-y-5">
@@ -65,7 +69,7 @@ export function DimensionControls() {
 
       <div className="space-y-2">
         <Slider
-          label="Height"
+          label={heightLabel}
           value={height}
           onValueChange={handleHeightChange}
           min={product.minHeight}

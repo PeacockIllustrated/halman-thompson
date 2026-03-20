@@ -2,6 +2,7 @@
 
 import { FinishSelector } from "./FinishSelector";
 import { DimensionControls } from "./DimensionControls";
+import { WorktopOptions } from "./WorktopOptions";
 import { PriceDisplay } from "./PriceDisplay";
 import { ConfigSummary } from "./ConfigSummary";
 import { Button } from "@/components/ui/button";
@@ -9,13 +10,17 @@ import { useConfiguratorStore } from "@/stores/configurator";
 import Link from "next/link";
 
 export function ConfigSidebar() {
-  const { selectedFinish, calculatedPrice } = useConfiguratorStore();
+  const { productType, selectedFinish, calculatedPrice } =
+    useConfiguratorStore();
+
+  const isWorktop = productType === "worktop";
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
       <div className="flex-1 space-y-6 p-5">
         <FinishSelector />
         <DimensionControls />
+        {isWorktop && <WorktopOptions />}
         <ConfigSummary />
         <PriceDisplay />
       </div>

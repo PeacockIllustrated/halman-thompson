@@ -3,6 +3,7 @@
 import { Component, type ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
 import { MetalSheet } from "@/components/three/MetalSheet";
+import { WorktopModel } from "@/components/three/WorktopModel";
 import { SceneEnvironment } from "@/components/three/SceneEnvironment";
 import { PanelLines } from "@/components/three/PanelLines";
 import { DimensionLabels } from "@/components/three/DimensionLabels";
@@ -42,7 +43,8 @@ class ViewerErrorBoundary extends Component<
               3D Preview Unavailable
             </p>
             <p className="mt-2 text-sm text-ht-dark/60">
-              Your browser may not support WebGL. Please try a different browser or device.
+              Your browser may not support WebGL. Please try a different browser
+              or device.
             </p>
           </div>
         </div>
@@ -53,37 +55,78 @@ class ViewerErrorBoundary extends Component<
 }
 
 function Scene() {
-  const { width, height, thickness, baseMetal, selectedFinish, panelLayout } =
-    useConfiguratorStore();
+  const {
+    productType,
+    width,
+    height,
+    thickness,
+    baseMetal,
+    selectedFinish,
+    panelLayout,
+    worktopConfig,
+  } = useConfiguratorStore();
 
   const isAged = selectedFinish?.isAged ?? false;
+  const isWorktop = productType === "worktop";
 
   return (
     <>
       <SceneEnvironment />
-      <MetalSheet
-        width={width}
-        height={height}
-        thickness={thickness}
-        baseMetal={baseMetal}
-        isAged={isAged}
-      />
-      <PanelLines
-        width={width}
-        height={height}
-        thickness={thickness}
-        panelLayout={panelLayout}
-      />
-      <DimensionLabels width={width} height={height} />
+      {isWorktop ? (
+        <>
+          <WorktopModel
+            width={width}
+            depth={height}
+            baseMetal={baseMetal}
+            isAged={isAged}
+            config={worktopConfig}
+          />
+          <PanelLines
+            width={width}
+            height={height}
+            thickness={thickness}
+            panelLayout={panelLayout}
+            orientation="horizontal"
+          />
+          <DimensionLabels
+            width={width}
+            height={height}
+            orientation="horizontal"
+          />
+        </>
+      ) : (
+        <>
+          <MetalSheet
+            width={width}
+            height={height}
+            thickness={thickness}
+            baseMetal={baseMetal}
+            isAged={isAged}
+          />
+          <PanelLines
+            width={width}
+            height={height}
+            thickness={thickness}
+            panelLayout={panelLayout}
+          />
+          <DimensionLabels width={width} height={height} />
+        </>
+      )}
     </>
   );
 }
 
 export function ProductViewer() {
+  const productType = useConfiguratorStore((s) => s.productType);
+  const isWorktop = productType === "worktop";
+
   return (
     <ViewerErrorBoundary>
       <Canvas
-        camera={{ position: [0, 0, 12], fov: 45 }}
+        camera={{
+          position: isWorktop ? [0, 7, 9] : [0, 0, 12],
+          fov: 45,
+        }}
         gl={{
           antialias: true,
           toneMapping: 3,

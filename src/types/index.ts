@@ -53,6 +53,35 @@ export type ModelType =
 
 export type ViewMode = "3d" | "front" | "side" | "room";
 
+export type CutoutShape = "rectangle" | "square" | "oval";
+
+// ─── Worktop Config ────────────────────────────────────────────
+
+export interface WorktopEdgeConfig {
+  enabled: boolean;
+  depth: number; // mm
+}
+
+export interface CutoutConfig {
+  enabled: boolean;
+  shape: CutoutShape;
+  width: number;
+  depth: number;
+  offsetX: number;
+  offsetZ: number;
+  returns: WorktopEdgeConfig;
+}
+
+export interface WorktopConfig {
+  cornerRadius: number; // mm
+  frontReturn: WorktopEdgeConfig;
+  backUpstand: WorktopEdgeConfig;
+  backReturn: WorktopEdgeConfig;
+  leftReturn: WorktopEdgeConfig;
+  rightReturn: WorktopEdgeConfig;
+  cutout: CutoutConfig;
+}
+
 // ─── Textures ───────────────────────────────────────────────────
 
 export interface TextureSet {
@@ -273,6 +302,7 @@ export interface ConfiguratorState {
   mountingType: MountingType;
   lacquerType: LacquerType;
   signageConfig: SignageConfig | null;
+  worktopConfig: WorktopConfig;
 
   // Pricing
   calculatedPrice: number | null;
@@ -293,6 +323,7 @@ export interface ConfiguratorState {
   setMountingType: (type: MountingType) => void;
   setLacquerType: (type: LacquerType) => void;
   setSignageConfig: (config: Partial<SignageConfig>) => void;
+  setWorktopConfig: (config: WorktopConfig) => void;
   setViewMode: (mode: ViewMode) => void;
   calculatePrice: () => Promise<void>;
   resetConfig: () => void;
