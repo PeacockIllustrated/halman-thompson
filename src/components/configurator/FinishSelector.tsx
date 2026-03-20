@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
 import {
-  getActiveFinishes,
   getFinishesByMetal,
   getAvailableMetals,
 } from "@/lib/products/finishes";

@@ -20,17 +20,22 @@ export function DimensionControls() {
   } = useConfiguratorStore();
 
   const product = getProductType(productType);
-  if (!product) return null;
 
   const handleWidthChange = useCallback(
-    (value: number) => setWidth(clampWidth(value, product)),
+    (value: number) => {
+      if (product) setWidth(clampWidth(value, product));
+    },
     [setWidth, product]
   );
 
   const handleHeightChange = useCallback(
-    (value: number) => setHeight(clampHeight(value, product)),
+    (value: number) => {
+      if (product) setHeight(clampHeight(value, product));
+    },
     [setHeight, product]
   );
+
+  if (!product) return null;
 
   const isMultiPanel = requiresMultiPanel(width, height);
 
