@@ -48,7 +48,7 @@ export default function ConfigurePage() {
         </div>
 
         {/* Config Sidebar */}
-        <div className="flex-1 overflow-y-auto border-t border-ht-dark/10 bg-white lg:w-[420px] lg:flex-shrink-0 lg:flex-grow-0 lg:border-l lg:border-t-0">
+        <div className="min-h-0 flex-1 overflow-y-auto border-t border-ht-dark/10 bg-white lg:flex-none lg:basis-[420px] lg:border-l lg:border-t-0">
           <ConfigSidebar />
         </div>
       </div>

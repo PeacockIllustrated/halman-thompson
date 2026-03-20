@@ -1,15 +1,16 @@
 "use client";
 
-import { Environment, ContactShadows, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 
 export function SceneEnvironment() {
   return (
     <>
-      <Environment preset="studio" />
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[5, 5, 5]} intensity={0.8} castShadow />
-      <directionalLight position={[-3, 2, -2]} intensity={0.3} />
-      <ContactShadows position={[0, -3, 0]} opacity={0.4} scale={20} blur={2} far={10} />
+      {/* Key + fill + rim lighting for metal reflections */}
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[5, 5, 5]} intensity={1.0} />
+      <directionalLight position={[-5, 3, -3]} intensity={0.5} />
+      <directionalLight position={[0, -2, 5]} intensity={0.3} />
+
       <OrbitControls
         makeDefault
         enableDamping

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, Component, type ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
 import { MetalSheet } from "@/components/three/MetalSheet";
 import { SceneEnvironment } from "@/components/three/SceneEnvironment";
@@ -82,19 +82,18 @@ function Scene() {
 export function ProductViewer() {
   return (
     <ViewerErrorBoundary>
-      <Suspense fallback={<LoadingFallback />}>
-        <Canvas
-          camera={{ position: [0, 0, 12], fov: 45 }}
-          gl={{
-            antialias: true,
-            toneMapping: 3,
-            toneMappingExposure: 1.2,
-          }}
-          className="touch-none"
-        >
-          <Scene />
-        </Canvas>
-      </Suspense>
+      <Canvas
+        camera={{ position: [0, 0, 12], fov: 45 }}
+        gl={{
+          antialias: true,
+          toneMapping: 3,
+          toneMappingExposure: 1.2,
+        }}
+        className="touch-none"
+        fallback={<LoadingFallback />}
+      >
+        <Scene />
+      </Canvas>
     </ViewerErrorBoundary>
   );
 }
