@@ -15,8 +15,11 @@ export function SceneEnvironment() {
         makeDefault
         enableDamping
         dampingFactor={0.1}
+        enableRotate={true}
+        enablePan={true}
+        enableZoom={true}
         minDistance={2}
-        maxDistance={20}
+        maxDistance={50}
         minPolarAngle={Math.PI * 0.15}
         maxPolarAngle={Math.PI * 0.85}
       />

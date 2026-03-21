@@ -51,7 +51,7 @@ export type ModelType =
   | "screen_cutout"
   | "plaque";
 
-export type ViewMode = "3d" | "front" | "side" | "room";
+export type ViewMode = "3d" | "front" | "side" | "room" | "flat";
 
 export type CutoutShape = "rectangle" | "square" | "oval";
 
@@ -80,6 +80,43 @@ export interface WorktopConfig {
   leftReturn: WorktopEdgeConfig;
   rightReturn: WorktopEdgeConfig;
   cutout: CutoutConfig;
+  splitPosition: number | null;
+  splitDirection: "horizontal" | "vertical" | null;
+}
+
+// ─── Flat Sheet ──────────────────────────────────────────────
+
+export interface BendLine {
+  id: string;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  direction: "up" | "down";
+  label: string;
+}
+
+export interface FlatSegment {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface FlatSheet {
+  totalWidth: number;
+  totalHeight: number;
+  thickness: number;
+  segments: FlatSegment[];
+  bendLines: BendLine[];
+  requiresSplit: boolean;
+  splitPosition: number | null;
+  splitDirection: "horizontal" | "vertical" | null;
+  bendAllowanceMm: number;
+  bendCount: number;
+  totalBendDeduction: number;
 }
 
 // ─── Textures ───────────────────────────────────────────────────
@@ -205,6 +242,8 @@ export interface PricingRequest {
   thickness: number;
   mountingType: MountingType;
   panelCount: number;
+  flatWidth?: number;
+  flatHeight?: number;
 }
 
 export interface PricingResponse {
@@ -329,4 +368,5 @@ export interface ConfiguratorState {
   resetConfig: () => void;
   getSnapshot: () => ConfigSnapshot;
   loadSnapshot: (snapshot: ConfigSnapshot) => void;
+  getFlatSheet: () => FlatSheet | null;
 }

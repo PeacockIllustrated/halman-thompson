@@ -4,7 +4,7 @@ import type { PricingRequest } from "@/types";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as PricingRequest;
+    const body = await request.json() as PricingRequest;
 
     // Basic validation
     if (

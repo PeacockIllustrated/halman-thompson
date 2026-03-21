@@ -11,6 +11,7 @@ import type {
   PanelLayout,
   WorktopConfig,
 } from "@/types";
+import { calculateFlatSheet } from "@/lib/worktop/flatSheet";
 
 export const DEFAULT_WORKTOP_CONFIG: WorktopConfig = {
   cornerRadius: 12,
@@ -28,6 +29,8 @@ export const DEFAULT_WORKTOP_CONFIG: WorktopConfig = {
     offsetZ: 0,
     returns: { enabled: true, depth: 30 },
   },
+  splitPosition: null,
+  splitDirection: null,
 };
 
 /**
@@ -77,6 +80,19 @@ function calculatePanelLayout(
   return { panelCount, panels, joinDirection, surcharge } as PanelLayout;
 }
 
+/**
+ * For worktops, derive panel count from flat sheet dimensions.
+ */
+function panelCountFromFlatSheet(
+  width: number,
+  height: number,
+  thickness: number,
+  config: WorktopConfig
+): number {
+  const flat = calculateFlatSheet(width, height, thickness, config);
+  return flat.requiresSplit ? 2 : 1;
+}
+
 export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
   // ─── Default State ──────────────────────────────────
   productType: "splashback",
@@ -115,27 +131,35 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
   },
 
   setWidth: (width: number) => {
-    const layout = calculatePanelLayout(width, get().height);
-    set({
-      width,
-      panelLayout: layout,
-      panelCount: layout?.panelCount ?? 1,
-      calculatedPrice: null,
-    });
+    const state = get();
+    if (state.productType === "worktop") {
+      const count = panelCountFromFlatSheet(width, state.height, state.thickness, state.worktopConfig);
+      set({ width, panelCount: count, panelLayout: null, calculatedPrice: null });
+    } else {
+      const layout = calculatePanelLayout(width, state.height);
+      set({ width, panelLayout: layout, panelCount: layout?.panelCount ?? 1, calculatedPrice: null });
+    }
   },
 
   setHeight: (height: number) => {
-    const layout = calculatePanelLayout(get().width, height);
-    set({
-      height,
-      panelLayout: layout,
-      panelCount: layout?.panelCount ?? 1,
-      calculatedPrice: null,
-    });
+    const state = get();
+    if (state.productType === "worktop") {
+      const count = panelCountFromFlatSheet(state.width, height, state.thickness, state.worktopConfig);
+      set({ height, panelCount: count, panelLayout: null, calculatedPrice: null });
+    } else {
+      const layout = calculatePanelLayout(state.width, height);
+      set({ height, panelLayout: layout, panelCount: layout?.panelCount ?? 1, calculatedPrice: null });
+    }
   },
 
   setThickness: (thickness: number) => {
-    set({ thickness, calculatedPrice: null });
+    const state = get();
+    if (state.productType === "worktop") {
+      const count = panelCountFromFlatSheet(state.width, state.height, thickness, state.worktopConfig);
+      set({ thickness, panelCount: count, calculatedPrice: null });
+    } else {
+      set({ thickness, calculatedPrice: null });
+    }
   },
 
   setMountingType: (type: MountingType) => {
@@ -156,7 +180,9 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
   },
 
   setWorktopConfig: (config: WorktopConfig) => {
-    set({ worktopConfig: config, calculatedPrice: null });
+    const state = get();
+    const count = panelCountFromFlatSheet(state.width, state.height, state.thickness, config);
+    set({ worktopConfig: config, panelCount: count, calculatedPrice: null });
   },
 
   setViewMode: (mode: ViewMode) => {
@@ -170,6 +196,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
     set({ isPriceLoading: true });
 
     try {
+      const flat = get().getFlatSheet();
       const response = await fetch("/api/pricing/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -181,6 +208,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
           thickness: state.thickness,
           mountingType: state.mountingType,
           panelCount: state.panelCount,
+          ...(flat ? { flatWidth: flat.totalWidth, flatHeight: flat.totalHeight } : {}),
         }),
       });
 
@@ -251,5 +279,11 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
       lacquerType: snapshot.l,
     });
     // Finish and signage config need to be loaded after finishes are fetched
+  },
+
+  getFlatSheet: () => {
+    const s = get();
+    if (s.productType !== "worktop") return null;
+    return calculateFlatSheet(s.width, s.height, s.thickness, s.worktopConfig);
   },
 }));

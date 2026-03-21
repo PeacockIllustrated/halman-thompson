@@ -61,8 +61,10 @@ export function calculatePrice(request: PricingRequest): PricingResponse {
     };
   }
 
-  // Area in m²
-  const areaM2 = (request.width * request.height) / 1_000_000;
+  // Area in m² — use flat sheet dimensions for worktops when available
+  const areaM2 = request.flatWidth && request.flatHeight
+    ? (request.flatWidth * request.flatHeight) / 1_000_000
+    : (request.width * request.height) / 1_000_000;
 
   // Base material cost
   const baseMaterial = areaM2 * BASE_PRICE_PER_M2[finish.baseMetal];

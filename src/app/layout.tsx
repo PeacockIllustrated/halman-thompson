@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,9 +8,21 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
+const cinzel = localFont({
+  src: [
+    {
+      path: "../assets/fonts/cinzel/Cinzel-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../assets/fonts/cinzel/Cinzel-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
   variable: "--font-serif",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${inter.variable} ${cinzel.variable}`}>
       <body className="min-h-screen bg-ht-cream text-ht-dark antialiased">
         {children}
       </body>

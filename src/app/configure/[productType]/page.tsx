@@ -34,21 +34,21 @@ export default function ConfigurePage() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-[100dvh] flex-col">
       <Header />
-      <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
-        {/* 3D Viewport */}
-        <div className="relative h-[50vh] flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 lg:h-auto lg:flex-[3]">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+        {/* 3D Viewport — compact on mobile, flexible on desktop */}
+        <div className="relative h-[32vh] flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 sm:h-[38vh] md:h-[42vh] lg:h-auto lg:flex-[3]">
           <ProductViewer />
-          <div className="absolute left-4 top-4">
-            <h1 className="font-serif text-xl font-semibold text-ht-dark/80">
+          <div className="absolute left-3 top-3 sm:left-4 sm:top-4">
+            <h1 className="font-serif text-base font-semibold text-ht-dark/80 sm:text-lg lg:text-xl">
               {productConfig.name} Configurator
             </h1>
           </div>
         </div>
 
-        {/* Config Sidebar */}
-        <div className="min-h-0 flex-1 overflow-y-auto border-t border-ht-dark/10 bg-white lg:flex-none lg:basis-[420px] lg:border-l lg:border-t-0">
+        {/* Config Sidebar — fills remaining height */}
+        <div className="flex min-h-0 flex-1 flex-col border-t border-ht-dark/10 bg-white lg:flex-none lg:basis-[420px] lg:border-l lg:border-t-0">
           <ConfigSidebar />
         </div>
       </div>

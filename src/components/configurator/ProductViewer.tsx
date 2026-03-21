@@ -77,6 +77,7 @@ function Scene() {
           <WorktopModel
             width={width}
             depth={height}
+            thickness={thickness}
             baseMetal={baseMetal}
             isAged={isAged}
             config={worktopConfig}
@@ -122,21 +123,23 @@ export function ProductViewer() {
 
   return (
     <ViewerErrorBoundary>
-      <Canvas
-        camera={{
-          position: isWorktop ? [0, 7, 9] : [0, 0, 12],
-          fov: 45,
-        }}
-        gl={{
-          antialias: true,
-          toneMapping: 3,
-          toneMappingExposure: 1.2,
-        }}
-        className="touch-none"
-        fallback={<LoadingFallback />}
-      >
-        <Scene />
-      </Canvas>
+      <div className="relative h-full w-full">
+        <Canvas
+          camera={{
+            position: isWorktop ? [0, 7, 9] : [0, 0, 12],
+            fov: 45,
+          }}
+          gl={{
+            antialias: true,
+            toneMapping: 3,
+            toneMappingExposure: 1.2,
+          }}
+          className="touch-none"
+          fallback={<LoadingFallback />}
+        >
+          <Scene />
+        </Canvas>
+      </div>
     </ViewerErrorBoundary>
   );
 }

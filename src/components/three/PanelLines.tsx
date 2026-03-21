@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { Line } from "@react-three/drei";
-import { SLAB_THICKNESS } from "./WorktopModel";
 import type { PanelLayout } from "@/types";
 
 interface PanelLinesProps {
@@ -34,7 +33,7 @@ export function PanelLines({
 
     if (orientation === "horizontal") {
       // Lines on the TOP surface of a horizontal slab (XZ plane)
-      const topY = SLAB_THICKNESS / 2 + 0.005;
+      const topY = 0.05 / 2 + 0.005;
 
       for (let i = 1; i < panelsWide; i++) {
         const x = -w / 2 + (w / panelsWide) * i;

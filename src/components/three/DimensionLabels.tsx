@@ -2,8 +2,6 @@
 
 import { useMemo } from "react";
 import { Html } from "@react-three/drei";
-import { SLAB_THICKNESS } from "./WorktopModel";
-
 interface DimensionLabelsProps {
   width: number;
   height: number;
@@ -11,6 +9,7 @@ interface DimensionLabelsProps {
 }
 
 const SCALE = 0.01;
+const LABEL_OFFSET = 0.05; // small offset below slab surface for label positioning
 
 export function DimensionLabels({
   width,
@@ -23,12 +22,12 @@ export function DimensionLabels({
   const positions = useMemo(() => {
     if (orientation === "horizontal") {
       return {
-        width: [0, -SLAB_THICKNESS / 2 - 0.25, h / 2 + 0.2] as [
+        width: [0, -LABEL_OFFSET / 2 - 0.25, h / 2 + 0.2] as [
           number,
           number,
           number,
         ],
-        height: [w / 2 + 0.25, -SLAB_THICKNESS / 2, 0] as [
+        height: [w / 2 + 0.25, -LABEL_OFFSET / 2, 0] as [
           number,
           number,
           number,

@@ -83,8 +83,9 @@ const CUTOUT_SHAPES: { value: CutoutShape; label: string }[] = [
 ];
 
 export function WorktopOptions() {
-  const { worktopConfig, setWorktopConfig, width, height } =
+  const { worktopConfig, setWorktopConfig, width, height, getFlatSheet } =
     useConfiguratorStore();
+  const flatSheet = getFlatSheet();
   const config = worktopConfig;
 
   const update = (partial: Partial<WorktopConfig>) => {
@@ -169,6 +170,24 @@ export function WorktopOptions() {
           onChange={(v) => update({ rightReturn: v })}
         />
       </div>
+
+      {/* ── Flat Sheet Info ──────────────────────── */}
+      {flatSheet && (
+        <div className="rounded-lg border border-ht-dark/10 p-3 space-y-1">
+          <h3 className="font-serif text-lg font-semibold">Flat Sheet</h3>
+          <p className="text-sm text-ht-dark/60">
+            {flatSheet.totalWidth}mm &times; {flatSheet.totalHeight}mm
+          </p>
+          <p className="text-sm text-ht-dark/60">
+            {flatSheet.bendCount} bends ({flatSheet.totalBendDeduction}mm allowance)
+          </p>
+          {flatSheet.requiresSplit && (
+            <p className="text-sm text-amber-600 font-medium">
+              Requires 2 panels (exceeds max sheet size)
+            </p>
+          )}
+        </div>
+      )}
 
       {/* ── Sink Cutout ──────────────────────────── */}
       <div className="space-y-3">
