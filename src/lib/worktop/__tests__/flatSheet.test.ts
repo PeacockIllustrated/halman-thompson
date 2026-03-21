@@ -13,6 +13,7 @@ const BASE_CONFIG: WorktopConfig = {
     shape: "rectangle",
     width: 450,
     depth: 350,
+    cornerRadius: 15,
     offsetX: 0,
     offsetZ: 0,
     returns: { enabled: true, depth: 30 },

@@ -87,7 +87,28 @@ function buildRectShape(w: number, h: number): THREE.Shape {
 }
 
 /**
+ * Quarter-annulus shape for worktop corner pieces.
+ * Creates a curved strip of sheet metal (thickness = gauge) following a quarter-circle arc.
+ */
+function buildCornerPieceShape(
+  r: number,
+  gauge: number,
+  startAngle: number,
+  endAngle: number
+): THREE.Shape {
+  const s = new THREE.Shape();
+  const ir = Math.max(0.0001, r - gauge);
+  // Outer arc (CCW)
+  s.absarc(0, 0, r, startAngle, endAngle, false);
+  // Inner arc (reversed / CW) back to start
+  s.absarc(0, 0, ir, endAngle, startAngle, true);
+  s.closePath();
+  return s;
+}
+
+/**
  * Rectangular cutout return ring shape (welded-on ring around cutout hole).
+ * Uses proper absarc corner arcs for dimensionally accurate rounded corners.
  */
 function buildRectCutoutReturnShape(
   cx: number,
@@ -98,40 +119,51 @@ function buildRectCutoutReturnShape(
   g: number
 ): THREE.Shape {
   const s = new THREE.Shape();
-  s.moveTo(cx - chw + cr, cy - chd);
-  s.lineTo(cx - chw, cy - chd + cr);
-  s.lineTo(cx - chw, cy + chd - cr);
-  s.lineTo(cx - chw + cr, cy + chd);
-  s.lineTo(cx + chw - cr, cy + chd);
-  s.lineTo(cx + chw, cy + chd - cr);
-  s.lineTo(cx + chw, cy - chd + cr);
-  s.lineTo(cx + chw - cr, cy - chd);
+
+  // Outer rounded rectangle (CCW winding)
+  if (cr > 0.0001) {
+    s.moveTo(cx - chw + cr, cy - chd);
+    s.lineTo(cx + chw - cr, cy - chd);
+    s.absarc(cx + chw - cr, cy - chd + cr, cr, -Math.PI / 2, 0, false);
+    s.lineTo(cx + chw, cy + chd - cr);
+    s.absarc(cx + chw - cr, cy + chd - cr, cr, 0, Math.PI / 2, false);
+    s.lineTo(cx - chw + cr, cy + chd);
+    s.absarc(cx - chw + cr, cy + chd - cr, cr, Math.PI / 2, Math.PI, false);
+    s.lineTo(cx - chw, cy - chd + cr);
+    s.absarc(cx - chw + cr, cy - chd + cr, cr, Math.PI, Math.PI * 1.5, false);
+  } else {
+    s.moveTo(cx - chw, cy - chd);
+    s.lineTo(cx + chw, cy - chd);
+    s.lineTo(cx + chw, cy + chd);
+    s.lineTo(cx - chw, cy + chd);
+  }
   s.closePath();
 
+  // Inner rounded rectangle (hole — offset inward by gauge)
   const ichw = chw - g;
   const ichd = chd - g;
   const icr = Math.max(0, cr - g);
 
   const inner = new THREE.Path();
-  if (icr < 0.0001) {
-    inner.moveTo(cx - ichw, cy - ichd);
-    inner.lineTo(cx - ichw, cy + ichd);
-    inner.lineTo(cx + ichw, cy + ichd);
-    inner.lineTo(cx + ichw, cy - ichd);
-    inner.closePath();
-  } else {
+  if (icr > 0.0001) {
     inner.moveTo(cx - ichw + icr, cy - ichd);
-    inner.lineTo(cx - ichw, cy - ichd + icr);
-    inner.lineTo(cx - ichw, cy + ichd - icr);
-    inner.lineTo(cx - ichw + icr, cy + ichd);
-    inner.lineTo(cx + ichw - icr, cy + ichd);
-    inner.lineTo(cx + ichw, cy + ichd - icr);
-    inner.lineTo(cx + ichw, cy - ichd + icr);
     inner.lineTo(cx + ichw - icr, cy - ichd);
-    inner.closePath();
+    inner.absarc(cx + ichw - icr, cy - ichd + icr, icr, -Math.PI / 2, 0, false);
+    inner.lineTo(cx + ichw, cy + ichd - icr);
+    inner.absarc(cx + ichw - icr, cy + ichd - icr, icr, 0, Math.PI / 2, false);
+    inner.lineTo(cx - ichw + icr, cy + ichd);
+    inner.absarc(cx - ichw + icr, cy + ichd - icr, icr, Math.PI / 2, Math.PI, false);
+    inner.lineTo(cx - ichw, cy - ichd + icr);
+    inner.absarc(cx - ichw + icr, cy - ichd + icr, icr, Math.PI, Math.PI * 1.5, false);
+  } else {
+    inner.moveTo(cx - ichw, cy - ichd);
+    inner.lineTo(cx + ichw, cy - ichd);
+    inner.lineTo(cx + ichw, cy + ichd);
+    inner.lineTo(cx - ichw, cy + ichd);
   }
-  s.holes.push(inner);
+  inner.closePath();
 
+  s.holes.push(inner);
   return s;
 }
 
@@ -145,6 +177,7 @@ function CutoutStrips({
   isAged,
   config,
   foldRef,
+  cutoutCR,
 }: {
   cutout: CutoutConfig;
   gauge: number;
@@ -153,6 +186,7 @@ function CutoutStrips({
   isAged: boolean;
   config: WorktopConfig;
   foldRef: React.MutableRefObject<number>;
+  cutoutCR: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
 
@@ -195,24 +229,45 @@ function CutoutStrips({
         z += returnD + stripGap;
       }
     } else {
-      // Rectangle / square → 4 side strips
+      // Rectangle / square → 4 side strips + 4 corner strips
       const cw = cutout.width * SCALE;
       const cd =
         (cutout.shape === "square" ? cutout.width : cutout.depth) * SCALE;
 
-      for (const { id, sw } of [
-        { id: "cut-top", sw: cw },
-        { id: "cut-bottom", sw: cw },
-        { id: "cut-left", sw: cd },
-        { id: "cut-right", sw: cd },
-      ]) {
-        result.push({ id, w: sw, h: returnD, x: 0, z: z + returnD / 2 });
+      // Side strips shortened by corner radius at each end
+      const cwShort = cw - 2 * cutoutCR;
+      const cdShort = cd - 2 * cutoutCR;
+      const cornerArcLen = cutoutCR > 0.001 ? (Math.PI * cutoutCR) / 2 : 0;
+
+      // Each side strip gets its corner arc piece placed alongside (right)
+      const sides: Array<{ id: string; sw: number; cornerId: string }> = [
+        { id: "cut-top", sw: cwShort, cornerId: "corner-tl" },
+        { id: "cut-bottom", sw: cwShort, cornerId: "corner-tr" },
+        { id: "cut-left", sw: cdShort, cornerId: "corner-bl" },
+        { id: "cut-right", sw: cdShort, cornerId: "corner-br" },
+      ];
+
+      for (const { id, sw, cornerId } of sides) {
+        const rowZ = z + returnD / 2;
+        result.push({ id, w: sw, h: returnD, x: 0, z: rowZ });
+
+        // Place corner arc piece alongside, to the right of the side strip
+        if (cornerArcLen > 0.001) {
+          result.push({
+            id: cornerId,
+            w: cornerArcLen,
+            h: returnD,
+            x: sw / 2 + stripGap + cornerArcLen / 2,
+            z: rowZ,
+          });
+        }
+
         z += returnD + stripGap;
       }
     }
 
     return result;
-  }, [cutout, hd, config]);
+  }, [cutout, hd, config, cutoutCR]);
 
   // Build geometries
   const geos = useMemo(
@@ -687,6 +742,19 @@ export function WorktopModel({
   const cutout = config.cutout;
   const hasCutout = cutout.enabled;
 
+  // Pre-compute cutout dimensions (needed for slab hole, return ring, and flat strips)
+  const cxs = cutout.offsetX * SCALE;
+  const czs = cutout.offsetZ * SCALE;
+  const cutReturnDepthScaled = cutout.returns.depth * SCALE;
+  const chwScaled = (cutout.width * SCALE) / 2;
+  const chdScaled =
+    ((cutout.shape === "square" ? cutout.width : cutout.depth) * SCALE) / 2;
+  // Visible corner radius for rectangular cutouts — user-controlled via slider
+  const cutoutCR =
+    hasCutout && cutout.shape !== "oval"
+      ? Math.min(cutout.cornerRadius * SCALE, chwScaled * 0.45, chdScaled * 0.45)
+      : 0;
+
   // ── Fold animation ──
   // foldRef: 0 = flat, 1 = folded (3D)
   // Default positions are FLAT. Fold rotation creates the 3D state.
@@ -698,6 +766,9 @@ export function WorktopModel({
   const rightPivotRef = useRef<THREE.Group>(null);
   // Cutout return ring — Y-scale animation (shrinks to 0 when flat)
   const cutoutRingWrapperRef = useRef<THREE.Group>(null);
+  // Worktop corner pieces — crossfade animation
+  const cornerPiece3DRef = useRef<THREE.Group>(null);
+  const cornerStripRef = useRef<THREE.Group>(null);
 
   useFrame((_, delta) => {
     const speed = 2.5;
@@ -757,6 +828,18 @@ export function WorktopModel({
       cutoutRingWrapperRef.current.scale.y = Math.max(0.001, fold);
       cutoutRingWrapperRef.current.visible = fold > 0.005;
     }
+
+    // ── Worktop corner pieces — 3D pieces shrink when flat ──
+    if (cornerPiece3DRef.current) {
+      cornerPiece3DRef.current.scale.y = Math.max(0.001, fold);
+      cornerPiece3DRef.current.visible = fold > 0.005;
+    }
+    // ── Corner flat strips — Y-scale only (keeps XZ positions stable) ──
+    if (cornerStripRef.current) {
+      const t = 1 - fold;
+      cornerStripRef.current.scale.y = Math.max(0.001, t);
+      cornerStripRef.current.visible = t > 0.005;
+    }
   });
 
   // Corner radii
@@ -773,26 +856,26 @@ export function WorktopModel({
 
     if (hasCutout) {
       const hole = new THREE.Path();
-      const cx = cutout.offsetX * SCALE;
-      const cy = cutout.offsetZ * SCALE;
-      const chw = (cutout.width * SCALE) / 2;
-      const chd =
-        ((cutout.shape === "square" ? cutout.width : cutout.depth) * SCALE) / 2;
 
       if (cutout.shape === "oval") {
-        hole.absellipse(cx, cy, chw, chd, 0, Math.PI * 2, true, 0);
+        hole.absellipse(cxs, czs, chwScaled, chdScaled, 0, Math.PI * 2, true, 0);
+      } else if (cutoutCR > 0.0001) {
+        hole.moveTo(cxs - chwScaled + cutoutCR, czs - chdScaled);
+        hole.lineTo(cxs + chwScaled - cutoutCR, czs - chdScaled);
+        hole.absarc(cxs + chwScaled - cutoutCR, czs - chdScaled + cutoutCR, cutoutCR, -Math.PI / 2, 0, false);
+        hole.lineTo(cxs + chwScaled, czs + chdScaled - cutoutCR);
+        hole.absarc(cxs + chwScaled - cutoutCR, czs + chdScaled - cutoutCR, cutoutCR, 0, Math.PI / 2, false);
+        hole.lineTo(cxs - chwScaled + cutoutCR, czs + chdScaled);
+        hole.absarc(cxs - chwScaled + cutoutCR, czs + chdScaled - cutoutCR, cutoutCR, Math.PI / 2, Math.PI, false);
+        hole.lineTo(cxs - chwScaled, czs - chdScaled + cutoutCR);
+        hole.absarc(cxs - chwScaled + cutoutCR, czs - chdScaled + cutoutCR, cutoutCR, Math.PI, Math.PI * 1.5, false);
       } else {
-        const cr = Math.min(0.005, chw * 0.1, chd * 0.1);
-        hole.moveTo(cx - chw + cr, cy - chd);
-        hole.lineTo(cx - chw, cy - chd + cr);
-        hole.lineTo(cx - chw, cy + chd - cr);
-        hole.lineTo(cx - chw + cr, cy + chd);
-        hole.lineTo(cx + chw - cr, cy + chd);
-        hole.lineTo(cx + chw, cy + chd - cr);
-        hole.lineTo(cx + chw, cy - chd + cr);
-        hole.lineTo(cx + chw - cr, cy - chd);
-        hole.closePath();
+        hole.moveTo(cxs - chwScaled, czs - chdScaled);
+        hole.lineTo(cxs + chwScaled, czs - chdScaled);
+        hole.lineTo(cxs + chwScaled, czs + chdScaled);
+        hole.lineTo(cxs - chwScaled, czs + chdScaled);
       }
+      hole.closePath();
       shape.holes.push(hole);
     }
 
@@ -805,19 +888,20 @@ export function WorktopModel({
     );
   }, [
     hw, hd, rf, rb, gauge, hasCutout,
-    cutout.offsetX, cutout.offsetZ, cutout.width, cutout.depth, cutout.shape,
+    cxs, czs, chwScaled, chdScaled, cutoutCR, cutout.shape,
   ]);
 
-  // ── Return/upstand geometries — ExtrudeGeometry for correct UV mapping ──
+  // ── Return/upstand geometries — shortened by corner radii ──
 
   const frontReturnDepthScaled = config.frontReturn.depth * SCALE;
+  const shortFrontW = rf > 0.0001 ? w - 2 * rf : w;
   const frontReturnGeo = useMemo(() => {
     if (!config.frontReturn.enabled) return null;
-    const shape = buildRectShape(w, frontReturnDepthScaled);
+    const shape = buildRectShape(shortFrontW, frontReturnDepthScaled);
     return smoothGeo(
       new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
     );
-  }, [w, gauge, frontReturnDepthScaled, config.frontReturn.enabled]);
+  }, [shortFrontW, gauge, frontReturnDepthScaled, config.frontReturn.enabled]);
 
   const isBackUpstand = config.backUpstand.enabled;
   const isBackReturn = config.backReturn.enabled && !isBackUpstand;
@@ -826,40 +910,158 @@ export function WorktopModel({
     : isBackReturn
       ? config.backReturn.depth * SCALE
       : 0;
+  const shortBackW = rb > 0.0001 ? w - 2 * rb : w;
   const backGeo = useMemo(() => {
     if (!isBackUpstand && !isBackReturn) return null;
-    const shape = buildRectShape(w, backDepthScaled);
+    const shape = buildRectShape(shortBackW, backDepthScaled);
     return smoothGeo(
       new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
     );
-  }, [w, gauge, backDepthScaled, isBackUpstand, isBackReturn]);
+  }, [shortBackW, gauge, backDepthScaled, isBackUpstand, isBackReturn]);
 
   const leftDepthScaled = config.leftReturn.depth * SCALE;
+  const shortSideD = d - rf - rb;
+  const sideReturnOffsetZ = (rb - rf) / 2;
   const leftReturnGeo = useMemo(() => {
     if (!config.leftReturn.enabled) return null;
-    const shape = buildRectShape(leftDepthScaled, d);
+    const usedD = shortSideD > 0.001 ? shortSideD : d;
+    const shape = buildRectShape(leftDepthScaled, usedD);
     return smoothGeo(
       new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
     );
-  }, [d, gauge, leftDepthScaled, config.leftReturn.enabled]);
+  }, [shortSideD, d, gauge, leftDepthScaled, config.leftReturn.enabled]);
 
   const rightDepthScaled = config.rightReturn.depth * SCALE;
   const rightReturnGeo = useMemo(() => {
     if (!config.rightReturn.enabled) return null;
-    const shape = buildRectShape(rightDepthScaled, d);
+    const usedD = shortSideD > 0.001 ? shortSideD : d;
+    const shape = buildRectShape(rightDepthScaled, usedD);
     return smoothGeo(
       new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
     );
-  }, [d, gauge, rightDepthScaled, config.rightReturn.enabled]);
+  }, [shortSideD, d, gauge, rightDepthScaled, config.rightReturn.enabled]);
+
+  // ── Worktop corner pieces (quarter-annulus, crossfade animated) ──
+
+  interface CornerPieceDef {
+    id: string;
+    cx: number;
+    cz: number;
+    r: number;
+    startAngle: number;
+    endAngle: number;
+    returnDepth: number;
+    flatX: number;
+    flatZ: number;
+    flatRotY: number;
+  }
+
+  const cornerPieces = useMemo((): CornerPieceDef[] => {
+    const pieces: CornerPieceDef[] = [];
+    const hasFront = config.frontReturn.enabled;
+    const hasBack = isBackUpstand || isBackReturn;
+    const hasLeft = config.leftReturn.enabled;
+    const hasRight = config.rightReturn.enabled;
+    const fD = frontReturnDepthScaled;
+    const bD = backDepthScaled;
+    const lD = leftDepthScaled;
+    const rD = rightDepthScaled;
+    // Anchor flat strips from the OUTER side: outermost vertices align
+    // with the returns' outer edges. As corner radius grows the strip
+    // expands inward toward the slab, scaling naturally.
+    // Formula: flatCoord = ±(hw + retD − hDiag − PAD)
+    const PAD = 0.04;   // visual gap between strip and return outer edges
+
+    // Front-right
+    if (rf > 0.0001 && hasFront && hasRight) {
+      const retD = Math.min(fD, rD);
+      const arcL = Math.PI * rf / 2;
+      const hDiag = Math.SQRT1_2 * (arcL + retD) / 2;
+      pieces.push({
+        id: "fr", cx: hw - rf, cz: hd - rf, r: rf,
+        startAngle: 0, endAngle: Math.PI / 2,
+        returnDepth: retD,
+        flatX: hw + retD - hDiag - PAD, flatZ: hd + retD - hDiag - PAD,
+        flatRotY: Math.PI / 4,
+      });
+    }
+    // Front-left
+    if (rf > 0.0001 && hasFront && hasLeft) {
+      const retD = Math.min(fD, lD);
+      const arcL = Math.PI * rf / 2;
+      const hDiag = Math.SQRT1_2 * (arcL + retD) / 2;
+      pieces.push({
+        id: "fl", cx: -hw + rf, cz: hd - rf, r: rf,
+        startAngle: Math.PI / 2, endAngle: Math.PI,
+        returnDepth: retD,
+        flatX: -(hw + retD - hDiag - PAD), flatZ: hd + retD - hDiag - PAD,
+        flatRotY: -Math.PI / 4,
+      });
+    }
+    // Back-right
+    if (rb > 0.0001 && hasBack && hasRight) {
+      const retD = Math.min(bD, rD);
+      const arcL = Math.PI * rb / 2;
+      const hDiag = Math.SQRT1_2 * (arcL + retD) / 2;
+      pieces.push({
+        id: "br", cx: hw - rb, cz: -hd + rb, r: rb,
+        startAngle: -Math.PI / 2, endAngle: 0,
+        returnDepth: retD,
+        flatX: hw + retD - hDiag - PAD, flatZ: -(hd + retD - hDiag - PAD),
+        flatRotY: -Math.PI / 4,
+      });
+    }
+    // Back-left
+    if (rb > 0.0001 && hasBack && hasLeft) {
+      const retD = Math.min(bD, lD);
+      const arcL = Math.PI * rb / 2;
+      const hDiag = Math.SQRT1_2 * (arcL + retD) / 2;
+      pieces.push({
+        id: "bl", cx: -hw + rb, cz: -hd + rb, r: rb,
+        startAngle: Math.PI, endAngle: Math.PI * 1.5,
+        returnDepth: retD,
+        flatX: -(hw + retD - hDiag - PAD), flatZ: -(hd + retD - hDiag - PAD),
+        flatRotY: Math.PI / 4,
+      });
+    }
+
+    return pieces;
+  }, [hw, hd, rf, rb, config, isBackUpstand, isBackReturn,
+      frontReturnDepthScaled, backDepthScaled, leftDepthScaled, rightDepthScaled]);
+
+  // 3D corner piece geometries (quarter-annulus extruded by return depth)
+  const cornerGeos = useMemo(
+    () =>
+      cornerPieces.map((p) => {
+        const shape = buildCornerPieceShape(p.r, gauge, p.startAngle, p.endAngle);
+        return smoothGeo(
+          new THREE.ExtrudeGeometry(shape, {
+            depth: p.returnDepth,
+            bevelEnabled: false,
+            curveSegments: 32,
+          })
+        );
+      }),
+    [cornerPieces, gauge]
+  );
+
+  // Flat corner strip geometries (unrolled arc: width = π×r/2, height = returnDepth)
+  const cornerStripGeos = useMemo(
+    () =>
+      cornerPieces.map((p) => {
+        const arcLen = (Math.PI * p.r) / 2;
+        const shape = buildRectShape(arcLen, p.returnDepth);
+        return smoothGeo(
+          new THREE.ExtrudeGeometry(shape, {
+            depth: gauge,
+            bevelEnabled: false,
+          })
+        );
+      }),
+    [cornerPieces, gauge]
+  );
 
   // ── Cutout return geometries ──
-
-  const cxs = cutout.offsetX * SCALE;
-  const czs = cutout.offsetZ * SCALE;
-  const cutReturnDepthScaled = cutout.returns.depth * SCALE;
-  const chwScaled = (cutout.width * SCALE) / 2;
-  const chdScaled =
-    ((cutout.shape === "square" ? cutout.width : cutout.depth) * SCALE) / 2;
 
   // Oval: ring geometry that scales Y for smooth fold animation
   const ovalReturnGeo = useMemo(() => {
@@ -888,19 +1090,16 @@ export function WorktopModel({
   const rectReturnGeo = useMemo(() => {
     if (!hasCutout || !cutout.returns.enabled || cutout.shape === "oval")
       return null;
-    const cx = cutout.offsetX * SCALE;
-    const cy = cutout.offsetZ * SCALE;
-    const cr = Math.min(0.005, chwScaled * 0.1, chdScaled * 0.1);
-    const shape = buildRectCutoutReturnShape(cx, cy, chwScaled, chdScaled, cr, gauge);
+    const shape = buildRectCutoutReturnShape(cxs, czs, chwScaled, chdScaled, cutoutCR, gauge);
     return smoothGeo(
       new THREE.ExtrudeGeometry(shape, {
         depth: cutReturnDepthScaled,
         bevelEnabled: false,
-        curveSegments: 32,
+        curveSegments: 48,
       })
     );
   }, [hasCutout, cutout.returns.enabled, cutout.shape,
-      cutout.offsetX, cutout.offsetZ, chwScaled, chdScaled, cutReturnDepthScaled, gauge]);
+      cxs, czs, chwScaled, chdScaled, cutoutCR, cutReturnDepthScaled, gauge]);
 
   return (
     <group>
@@ -972,14 +1171,15 @@ export function WorktopModel({
 
       {/* ── Left return ──
           Pivot at left edge of slab. Default (flat) = extends in -X.
-          Fold rotation.z = PI/2 maps -X → -Y (hangs down). */}
+          Fold rotation.z = PI/2 maps -X → -Y (hangs down).
+          Shortened by corner radii, offset Z for asymmetric corners. */}
       {leftReturnGeo && (
         <group position={[-hw, gauge / 2, 0]}>
           <group ref={leftPivotRef}>
             <mesh
               geometry={leftReturnGeo}
               rotation={[Math.PI / 2, 0, 0]}
-              position={[-leftDepthScaled / 2, 0, 0]}
+              position={[-leftDepthScaled / 2, 0, sideReturnOffsetZ]}
             >
               <MetalMaterial baseMetal={baseMetal} isAged={isAged} />
             </mesh>
@@ -989,18 +1189,53 @@ export function WorktopModel({
 
       {/* ── Right return ──
           Pivot at right edge of slab. Default (flat) = extends in +X.
-          Fold rotation.z = -PI/2 maps +X → -Y (hangs down). */}
+          Fold rotation.z = -PI/2 maps +X → -Y (hangs down).
+          Shortened by corner radii, offset Z for asymmetric corners. */}
       {rightReturnGeo && (
         <group position={[hw, gauge / 2, 0]}>
           <group ref={rightPivotRef}>
             <mesh
               geometry={rightReturnGeo}
               rotation={[Math.PI / 2, 0, 0]}
-              position={[rightDepthScaled / 2, 0, 0]}
+              position={[rightDepthScaled / 2, 0, sideReturnOffsetZ]}
             >
               <MetalMaterial baseMetal={baseMetal} isAged={isAged} />
             </mesh>
           </group>
+        </group>
+      )}
+
+      {/* ── Worktop corner pieces (3D) — quarter-annulus, hangs from slab top like returns ── */}
+      {cornerPieces.length > 0 && (
+        <group position={[0, gauge / 2, 0]}>
+          <group ref={cornerPiece3DRef}>
+            {cornerPieces.map((p, i) => (
+              <mesh
+                key={p.id}
+                geometry={cornerGeos[i]}
+                rotation={[Math.PI / 2, 0, 0]}
+                position={[p.cx, 0, p.cz]}
+              >
+                <MetalMaterial baseMetal={baseMetal} isAged={isAged} doubleSide />
+              </mesh>
+            ))}
+          </group>
+        </group>
+      )}
+
+      {/* ── Worktop corner flat strips — visible when flat, arc circumference width ── */}
+      {cornerPieces.length > 0 && (
+        <group ref={cornerStripRef}>
+          {cornerPieces.map((p, i) => (
+            <mesh
+              key={`strip-${p.id}`}
+              geometry={cornerStripGeos[i]}
+              rotation={[Math.PI / 2, 0, p.flatRotY]}
+              position={[p.flatX, gauge / 2, p.flatZ]}
+            >
+              <MetalMaterial baseMetal={baseMetal} isAged={isAged} />
+            </mesh>
+          ))}
         </group>
       )}
 
@@ -1040,6 +1275,7 @@ export function WorktopModel({
           isAged={isAged}
           config={config}
           foldRef={foldRef}
+          cutoutCR={cutoutCR}
         />
       )}
     </group>

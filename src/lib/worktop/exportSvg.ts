@@ -375,10 +375,14 @@ function drawPattern(fs: FlatSheet, cfg: WorktopConfig, ox: number, oy: number, 
       const ry = cy + p(ccy - c.depth / 2, scale);
       const rw = p(c.width, scale);
       const rh = p(c.depth, scale);
+      const cutDash = `${6 * S},${2 * S},${2 * S},${2 * S}`;
       if (c.shape === "oval")
-        s += `<ellipse cx="${rx + rw / 2}" cy="${ry + rh / 2}" rx="${rw / 2}" ry="${rh / 2}" fill="#fff" stroke="${K}" stroke-width="${sw * 0.9}" stroke-dasharray="${6 * S},${2 * S},${2 * S},${2 * S}"/>\n`;
-      else
-        s += `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="#fff" stroke="${K}" stroke-width="${sw * 0.9}" stroke-dasharray="${6 * S},${2 * S},${2 * S},${2 * S}"/>\n`;
+        s += `<ellipse cx="${rx + rw / 2}" cy="${ry + rh / 2}" rx="${rw / 2}" ry="${rh / 2}" fill="#fff" stroke="${K}" stroke-width="${sw * 0.9}" stroke-dasharray="${cutDash}"/>\n`;
+      else if (c.cornerRadius > 0) {
+        const crPt = p(Math.min(c.cornerRadius, c.width / 2, c.depth / 2), scale);
+        s += `<path d="${rrPath(rx, ry, rw, rh, crPt, crPt, crPt, crPt)}" fill="#fff" stroke="${K}" stroke-width="${sw * 0.9}" stroke-dasharray="${cutDash}"/>\n`;
+      } else
+        s += `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="#fff" stroke="${K}" stroke-width="${sw * 0.9}" stroke-dasharray="${cutDash}"/>\n`;
       s += `<text x="${rx + rw / 2}" y="${ry + rh / 2}" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="${6 * S}" fill="${K}">CUTOUT</text>\n`;
       s += `<text x="${rx + rw / 2}" y="${ry + rh / 2 + 9 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${5 * S}" fill="${G}">${c.width} × ${c.depth}</text>\n`;
     }
@@ -493,38 +497,72 @@ function drawPreview(w: number, d: number, cfg: WorktopConfig, ox: number, oy: n
   return s;
 }
 
-/** Rectangular cutout returns — 4 pieces (shown in sidebar) */
+/** Rectangular cutout returns — side strips + corner arc strips (shown in sidebar) */
 function drawReturns(cfg: WorktopConfig, ox: number, oy: number, aw: number, ah: number, S: number): string {
   if (!cfg.cutout.enabled || !cfg.cutout.returns.enabled || cfg.cutout.shape === "oval") return "";
   const c = cfg.cutout;
   const rD = c.returns.depth;
+  const cr = Math.min(c.cornerRadius, c.width / 4, c.depth / 4);
+  const hasCorners = cr > 0;
+  const arcLen = hasCorners ? Math.round((Math.PI * cr) / 2 * 10) / 10 : 0;
+  // Side strip dimensions (shortened by corner radius at each end)
+  const sideW = hasCorners ? c.width - 2 * cr : c.width;
+  const sideD = hasCorners ? c.depth - 2 * cr : c.depth;
+  const pieceCount = hasCorners ? 8 : 4;
+
   let s = "";
-  s += `<text x="${ox + aw / 2}" y="${oy + 4 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${6 * S}" fill="${K}" letter-spacing="${S}" font-weight="bold">CUTOUT RETURNS ×4</text>\n`;
+  s += `<text x="${ox + aw / 2}" y="${oy + 4 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${6 * S}" fill="${K}" letter-spacing="${S}" font-weight="bold">CUTOUT RETURNS ×${pieceCount}</text>\n`;
   s += `<text x="${ox + aw / 2}" y="${oy + 13 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4.5 * S}" fill="${G}">(welded to cutout edges)</text>\n`;
   const to = 22 * S;
-  const gap = 12 * S;
-  const sc = pickScale(aw - 16 * S, ah - to - 8 * S, Math.max(c.width, c.depth * 2 + 10), rD * 3 + 30);
-  const sy = oy + to;
+  const gap = 10 * S;
+  const maxStripW = Math.max(sideW, sideD, arcLen);
+  const totalH = rD * (hasCorners ? 5 : 3) + 40;
+  const sc = pickScale(aw - 16 * S, ah - to - 8 * S, maxStripW + 20, totalH);
+  let cy = oy + to;
   const mx = ox + aw / 2;
-  const wW = p(c.width, sc);
+  const sw2 = 0.5 * S;
+
+  // ── Top/bottom side strips (×2) ──
+  const wW = p(sideW, sc);
   const wH = p(rD, sc);
   const wx = mx - wW / 2;
-  s += `<rect x="${wx}" y="${sy}" width="${wW}" height="${wH}" fill="${FS}" stroke="${K}" stroke-width="${0.5 * S}"/>\n`;
-  s += `<text x="${mx}" y="${sy + wH / 2 + 2 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${K}">${c.width} × ${rD}</text>\n`;
-  s += hD(wx, sy + wH, wx + wW, 6 * S, `${c.width}mm`, S, G, 4.5);
-  const w2y = sy + wH + gap + 6 * S;
-  s += `<rect x="${wx}" y="${w2y}" width="${wW}" height="${wH}" fill="${FS}" stroke="${K}" stroke-width="${0.5 * S}"/>\n`;
-  s += `<text x="${mx}" y="${w2y + wH / 2 + 2 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${K}">${c.width} × ${rD}</text>\n`;
-  const nW = p(c.depth, sc);
+  s += `<rect x="${wx}" y="${cy}" width="${wW}" height="${wH}" fill="${FS}" stroke="${K}" stroke-width="${sw2}"/>\n`;
+  s += `<text x="${mx}" y="${cy + wH / 2 + 2 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${K}">${sideW} × ${rD}</text>\n`;
+  s += hD(wx, cy + wH, wx + wW, 6 * S, `${sideW}mm`, S, G, 4.5);
+  cy += wH + gap + 6 * S;
+  s += `<rect x="${wx}" y="${cy}" width="${wW}" height="${wH}" fill="${FS}" stroke="${K}" stroke-width="${sw2}"/>\n`;
+  s += `<text x="${mx}" y="${cy + wH / 2 + 2 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${K}">${sideW} × ${rD}</text>\n`;
+  cy += wH + gap + 4 * S;
+
+  // ── Left/right side strips (×2) ──
+  const nW = p(sideD, sc);
   const nH = p(rD, sc);
-  const nY = w2y + wH + gap + 4 * S;
   const pg = 8 * S;
-  s += `<rect x="${mx - nW - pg / 2}" y="${nY}" width="${nW}" height="${nH}" fill="${FS}" stroke="${K}" stroke-width="${0.5 * S}"/>\n`;
-  s += `<text x="${mx - nW / 2 - pg / 2}" y="${nY + nH / 2 + 2 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${K}">${c.depth} × ${rD}</text>\n`;
-  s += `<rect x="${mx + pg / 2}" y="${nY}" width="${nW}" height="${nH}" fill="${FS}" stroke="${K}" stroke-width="${0.5 * S}"/>\n`;
-  s += `<text x="${mx + pg / 2 + nW / 2}" y="${nY + nH / 2 + 2 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${K}">${c.depth} × ${rD}</text>\n`;
-  s += hD(mx - nW - pg / 2, nY + nH, mx - pg / 2, 6 * S, `${c.depth}mm`, S, G, 4.5);
-  s += vD(wx + wW, sy, sy + wH, 8 * S, `${rD}mm`, S, G, 4.5);
+  s += `<rect x="${mx - nW - pg / 2}" y="${cy}" width="${nW}" height="${nH}" fill="${FS}" stroke="${K}" stroke-width="${sw2}"/>\n`;
+  s += `<text x="${mx - nW / 2 - pg / 2}" y="${cy + nH / 2 + 2 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${K}">${sideD} × ${rD}</text>\n`;
+  s += `<rect x="${mx + pg / 2}" y="${cy}" width="${nW}" height="${nH}" fill="${FS}" stroke="${K}" stroke-width="${sw2}"/>\n`;
+  s += `<text x="${mx + pg / 2 + nW / 2}" y="${cy + nH / 2 + 2 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${K}">${sideD} × ${rD}</text>\n`;
+  s += hD(mx - nW - pg / 2, cy + nH, mx - pg / 2, 6 * S, `${sideD}mm`, S, G, 4.5);
+  s += vD(wx + wW, oy + to, oy + to + wH, 8 * S, `${rD}mm`, S, G, 4.5);
+  cy += nH + gap + 4 * S;
+
+  // ── Corner arc strips (×4) — only when corner radius > 0 ──
+  if (hasCorners) {
+    const aW = p(arcLen, sc);
+    const aH = p(rD, sc);
+    const colGap = 6 * S;
+    // Draw 4 corner strips in a 2×2 grid
+    const ax1 = mx - aW - colGap / 2;
+    const ax2 = mx + colGap / 2;
+    for (let row = 0; row < 2; row++) {
+      const ry = cy + row * (aH + gap);
+      s += `<rect x="${ax1}" y="${ry}" width="${aW}" height="${aH}" fill="${FS}" stroke="${K}" stroke-width="${sw2}"/>\n`;
+      s += `<rect x="${ax2}" y="${ry}" width="${aW}" height="${aH}" fill="${FS}" stroke="${K}" stroke-width="${sw2}"/>\n`;
+    }
+    s += `<text x="${mx}" y="${cy - 3 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4 * S}" fill="${G}">Corner arcs ×4 (${arcLen}mm × ${rD}mm)</text>\n`;
+    s += hD(ax1, cy + aH, ax1 + aW, 6 * S, `${arcLen}mm`, S, G, 4.5);
+  }
+
   return s;
 }
 

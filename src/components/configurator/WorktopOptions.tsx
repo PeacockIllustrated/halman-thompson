@@ -147,13 +147,17 @@ export function WorktopOptions() {
           min={50}
           max={200}
         />
-        {!config.backUpstand.enabled && (
-          <EdgeControl
-            label="Back Return"
-            config={config.backReturn}
-            onChange={(v) => update({ backReturn: v })}
-          />
-        )}
+        <EdgeControl
+          label="Back Return"
+          config={config.backReturn}
+          onChange={(v) =>
+            update({
+              backReturn: v,
+              // Disable back upstand when return is enabled
+              ...(v.enabled ? { backUpstand: { ...config.backUpstand, enabled: false } } : {}),
+            })
+          }
+        />
         {config.backUpstand.enabled && config.cornerRadius > 0 && (
           <p className="text-xs text-ht-dark/40 -mt-1">
             Corner radius applies to front corners only when upstand is active
@@ -241,6 +245,27 @@ export function WorktopOptions() {
                 min={150}
                 max={Math.min(600, height - 100)}
                 step={10}
+                unit="mm"
+              />
+            )}
+
+            {/* Corner radius — rectangle and square only */}
+            {config.cutout.shape !== "oval" && (
+              <Slider
+                label="Corner Radius"
+                value={config.cutout.cornerRadius}
+                onValueChange={(v) => updateCutout({ cornerRadius: v })}
+                min={0}
+                max={Math.min(
+                  50,
+                  Math.floor(config.cutout.width / 4),
+                  Math.floor(
+                    (config.cutout.shape === "square"
+                      ? config.cutout.width
+                      : config.cutout.depth) / 4
+                  )
+                )}
+                step={1}
                 unit="mm"
               />
             )}

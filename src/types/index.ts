@@ -67,6 +67,7 @@ export interface CutoutConfig {
   shape: CutoutShape;
   width: number;
   depth: number;
+  cornerRadius: number; // mm — corner radius for rectangle/square cutouts
   offsetX: number;
   offsetZ: number;
   returns: WorktopEdgeConfig;
