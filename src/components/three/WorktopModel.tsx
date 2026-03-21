@@ -9,7 +9,7 @@ import {
 } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { MetalMaterial } from "./MetalMaterial";
 import { useConfiguratorStore } from "@/stores/configurator";
-import type { MetalType, WorktopConfig } from "@/types";
+import type { MetalType, WorktopConfig, CutoutConfig } from "@/types";
 
 interface WorktopModelProps {
   width: number;
@@ -84,6 +84,176 @@ function buildRectShape(w: number, h: number): THREE.Shape {
   s.lineTo(-w / 2, h / 2);
   s.closePath();
   return s;
+}
+
+/**
+ * Rectangular cutout return ring shape (welded-on ring around cutout hole).
+ */
+function buildRectCutoutReturnShape(
+  cx: number,
+  cy: number,
+  chw: number,
+  chd: number,
+  cr: number,
+  g: number
+): THREE.Shape {
+  const s = new THREE.Shape();
+  s.moveTo(cx - chw + cr, cy - chd);
+  s.lineTo(cx - chw, cy - chd + cr);
+  s.lineTo(cx - chw, cy + chd - cr);
+  s.lineTo(cx - chw + cr, cy + chd);
+  s.lineTo(cx + chw - cr, cy + chd);
+  s.lineTo(cx + chw, cy + chd - cr);
+  s.lineTo(cx + chw, cy - chd + cr);
+  s.lineTo(cx + chw - cr, cy - chd);
+  s.closePath();
+
+  const ichw = chw - g;
+  const ichd = chd - g;
+  const icr = Math.max(0, cr - g);
+
+  const inner = new THREE.Path();
+  if (icr < 0.0001) {
+    inner.moveTo(cx - ichw, cy - ichd);
+    inner.lineTo(cx - ichw, cy + ichd);
+    inner.lineTo(cx + ichw, cy + ichd);
+    inner.lineTo(cx + ichw, cy - ichd);
+    inner.closePath();
+  } else {
+    inner.moveTo(cx - ichw + icr, cy - ichd);
+    inner.lineTo(cx - ichw, cy - ichd + icr);
+    inner.lineTo(cx - ichw, cy + ichd - icr);
+    inner.lineTo(cx - ichw + icr, cy + ichd);
+    inner.lineTo(cx + ichw - icr, cy + ichd);
+    inner.lineTo(cx + ichw, cy + ichd - icr);
+    inner.lineTo(cx + ichw, cy - ichd + icr);
+    inner.lineTo(cx + ichw - icr, cy - ichd);
+    inner.closePath();
+  }
+  s.holes.push(inner);
+
+  return s;
+}
+
+// ── Cutout return flat strips (separate cut pieces, scale-animated) ──
+
+function CutoutStrips({
+  cutout,
+  gauge,
+  hd,
+  baseMetal,
+  isAged,
+  config,
+  foldRef,
+}: {
+  cutout: CutoutConfig;
+  gauge: number;
+  hd: number;
+  baseMetal: MetalType;
+  isAged: boolean;
+  config: WorktopConfig;
+  foldRef: React.MutableRefObject<number>;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+
+  const strips = useMemo(() => {
+    const returnD = cutout.returns.depth * SCALE;
+    const frontEdge =
+      hd + (config.frontReturn.enabled ? config.frontReturn.depth * SCALE : 0);
+    const startZ = frontEdge + 0.4; // 40mm gap below front edge
+    const stripGap = 0.15;
+
+    const result: Array<{
+      id: string;
+      w: number;
+      h: number;
+      x: number;
+      z: number;
+    }> = [];
+
+    let z = startZ;
+
+    if (cutout.shape === "oval") {
+      // Ramanujan circumference approximation
+      const a = cutout.width / 2;
+      const b = cutout.depth / 2;
+      const hP = ((a - b) ** 2) / ((a + b) ** 2);
+      const circ =
+        Math.PI * (a + b) * (1 + (3 * hP) / (10 + Math.sqrt(4 - 3 * hP)));
+      const MAX_STRIP = 2000;
+      const n = Math.ceil(circ / MAX_STRIP);
+      const stripWmm = circ / n;
+
+      for (let i = 0; i < n; i++) {
+        result.push({
+          id: `oval-${i}`,
+          w: stripWmm * SCALE,
+          h: returnD,
+          x: 0,
+          z: z + returnD / 2,
+        });
+        z += returnD + stripGap;
+      }
+    } else {
+      // Rectangle / square → 4 side strips
+      const cw = cutout.width * SCALE;
+      const cd =
+        (cutout.shape === "square" ? cutout.width : cutout.depth) * SCALE;
+
+      for (const { id, sw } of [
+        { id: "cut-top", sw: cw },
+        { id: "cut-bottom", sw: cw },
+        { id: "cut-left", sw: cd },
+        { id: "cut-right", sw: cd },
+      ]) {
+        result.push({ id, w: sw, h: returnD, x: 0, z: z + returnD / 2 });
+        z += returnD + stripGap;
+      }
+    }
+
+    return result;
+  }, [cutout, hd, config]);
+
+  // Build geometries
+  const geos = useMemo(
+    () =>
+      strips.map((s) => {
+        const shape = buildRectShape(s.w, s.h);
+        return smoothGeo(
+          new THREE.ExtrudeGeometry(shape, {
+            depth: gauge,
+            bevelEnabled: false,
+          })
+        );
+      }),
+    [strips, gauge]
+  );
+
+  // Smooth scale: grow from 0 → 1 as fold goes from 1 → 0
+  useFrame(() => {
+    if (!groupRef.current) return;
+    const t = 1 - foldRef.current; // 0 when 3D, 1 when flat
+    const s = Math.max(0.001, t);
+    groupRef.current.scale.set(s, s, s);
+    groupRef.current.visible = t > 0.005;
+  });
+
+  if (strips.length === 0) return null;
+
+  return (
+    <group ref={groupRef}>
+      {strips.map((strip, i) => (
+        <mesh
+          key={strip.id}
+          geometry={geos[i]}
+          rotation={[Math.PI / 2, 0, 0]}
+          position={[strip.x, gauge / 2, strip.z]}
+        >
+          <MetalMaterial baseMetal={baseMetal} isAged={isAged} />
+        </mesh>
+      ))}
+    </group>
+  );
 }
 
 // ── Bend-line annotations (dashed lines + soft glow on flat view) ──
@@ -495,13 +665,8 @@ export function WorktopModel({
   const backPivotRef = useRef<THREE.Group>(null);
   const leftPivotRef = useRef<THREE.Group>(null);
   const rightPivotRef = useRef<THREE.Group>(null);
-  // Cutout return pivot refs — rectangular walls fold like edge returns
-  const cutFrontPivotRef = useRef<THREE.Group>(null);
-  const cutBackPivotRef = useRef<THREE.Group>(null);
-  const cutLeftPivotRef = useRef<THREE.Group>(null);
-  const cutRightPivotRef = useRef<THREE.Group>(null);
-  // Oval ring scale wrapper
-  const ovalRingWrapperRef = useRef<THREE.Group>(null);
+  // Cutout return ring — Y-scale animation (shrinks to 0 when flat)
+  const cutoutRingWrapperRef = useRef<THREE.Group>(null);
 
   useFrame((_, delta) => {
     const speed = 2.5;
@@ -555,27 +720,11 @@ export function WorktopModel({
       rightPivotRef.current.rotation.z = -fold * Math.PI / 2;
     }
 
-    // ── Cutout return walls — rectangular: pivot-fold like edge returns ──
-    // Front wall: lies flat in cutout hole (-Z from pivot), folds down (-Y)
-    if (cutFrontPivotRef.current) {
-      cutFrontPivotRef.current.rotation.x = -fold * Math.PI / 2;
-    }
-    // Back wall: lies flat in cutout hole (+Z from pivot), folds down (-Y)
-    if (cutBackPivotRef.current) {
-      cutBackPivotRef.current.rotation.x = fold * Math.PI / 2;
-    }
-    // Left wall: lies flat in cutout hole (+X from pivot), folds down (-Y)
-    if (cutLeftPivotRef.current) {
-      cutLeftPivotRef.current.rotation.z = -fold * Math.PI / 2;
-    }
-    // Right wall: lies flat in cutout hole (-X from pivot), folds down (-Y)
-    if (cutRightPivotRef.current) {
-      cutRightPivotRef.current.rotation.z = fold * Math.PI / 2;
-    }
-
-    // ── Cutout return ring — oval: smooth scale animation ──
-    if (ovalRingWrapperRef.current) {
-      ovalRingWrapperRef.current.scale.y = Math.max(0.001, fold);
+    // ── Cutout return ring — shrinks to 0 when going flat ──
+    // (both oval and rectangular use the same Y-scale crossfade)
+    if (cutoutRingWrapperRef.current) {
+      cutoutRingWrapperRef.current.scale.y = Math.max(0.001, fold);
+      cutoutRingWrapperRef.current.visible = fold > 0.005;
     }
   });
 
@@ -704,26 +853,23 @@ export function WorktopModel({
   }, [hasCutout, cutout.returns.enabled, cutout.shape,
       chwScaled, chdScaled, cutReturnDepthScaled, gauge]);
 
-  // Rectangular: 4 individual wall panels that pivot-fold from cutout edges
-  const cutFBGeo = useMemo(() => {
+  // Rectangular: welded ring geometry (shrinks via Y-scale during transition)
+  const rectReturnGeo = useMemo(() => {
     if (!hasCutout || !cutout.returns.enabled || cutout.shape === "oval")
       return null;
-    const shape = buildRectShape(chwScaled * 2, cutReturnDepthScaled);
+    const cx = cutout.offsetX * SCALE;
+    const cy = cutout.offsetZ * SCALE;
+    const cr = Math.min(0.005, chwScaled * 0.1, chdScaled * 0.1);
+    const shape = buildRectCutoutReturnShape(cx, cy, chwScaled, chdScaled, cr, gauge);
     return smoothGeo(
-      new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
+      new THREE.ExtrudeGeometry(shape, {
+        depth: cutReturnDepthScaled,
+        bevelEnabled: false,
+        curveSegments: 32,
+      })
     );
   }, [hasCutout, cutout.returns.enabled, cutout.shape,
-      chwScaled, cutReturnDepthScaled, gauge]);
-
-  const cutLRGeo = useMemo(() => {
-    if (!hasCutout || !cutout.returns.enabled || cutout.shape === "oval")
-      return null;
-    const shape = buildRectShape(chdScaled * 2, cutReturnDepthScaled);
-    return smoothGeo(
-      new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
-    );
-  }, [hasCutout, cutout.returns.enabled, cutout.shape,
-      chdScaled, cutReturnDepthScaled, gauge]);
+      cutout.offsetX, cutout.offsetZ, chwScaled, chdScaled, cutReturnDepthScaled, gauge]);
 
   return (
     <group>
@@ -827,76 +973,43 @@ export function WorktopModel({
         </group>
       )}
 
-      {/* ── Cutout returns — oval: ring with smooth Y-scale animation ── */}
-      {hasCutout && cutout.returns.enabled && cutout.shape === "oval" && ovalReturnGeo && (
+      {/* ── Cutout return ring — shrinks via Y-scale during transition ── */}
+      {hasCutout && cutout.returns.enabled && (
         <group position={[0, -gauge / 2, 0]}>
-          <group ref={ovalRingWrapperRef}>
-            <mesh
-              geometry={ovalReturnGeo}
-              rotation={[Math.PI / 2, 0, 0]}
-              position={[cxs, 0, czs]}
-            >
-              <MetalMaterial baseMetal={baseMetal} isAged={isAged} doubleSide />
-            </mesh>
+          <group ref={cutoutRingWrapperRef}>
+            {cutout.shape === "oval" && ovalReturnGeo && (
+              <mesh
+                geometry={ovalReturnGeo}
+                rotation={[Math.PI / 2, 0, 0]}
+                position={[cxs, 0, czs]}
+              >
+                <MetalMaterial baseMetal={baseMetal} isAged={isAged} doubleSide />
+              </mesh>
+            )}
+            {cutout.shape !== "oval" && rectReturnGeo && (
+              <mesh
+                geometry={rectReturnGeo}
+                rotation={[Math.PI / 2, 0, 0]}
+                position={[0, 0, 0]}
+              >
+                <MetalMaterial baseMetal={baseMetal} isAged={isAged} doubleSide />
+              </mesh>
+            )}
           </group>
         </group>
       )}
 
-      {/* ── Cutout returns — rectangular: 4 pivot-folding wall segments ── */}
-      {hasCutout && cutout.returns.enabled && cutout.shape !== "oval" && cutFBGeo && cutLRGeo && (
-        <>
-          {/* Front wall: pivot at cutout front edge, folds down */}
-          <group position={[cxs, gauge / 2, czs + chdScaled]}>
-            <group ref={cutFrontPivotRef}>
-              <mesh
-                geometry={cutFBGeo}
-                rotation={[Math.PI / 2, 0, 0]}
-                position={[0, 0, -cutReturnDepthScaled / 2]}
-              >
-                <MetalMaterial baseMetal={baseMetal} isAged={isAged} />
-              </mesh>
-            </group>
-          </group>
-
-          {/* Back wall: pivot at cutout back edge, folds down */}
-          <group position={[cxs, gauge / 2, czs - chdScaled]}>
-            <group ref={cutBackPivotRef}>
-              <mesh
-                geometry={cutFBGeo}
-                rotation={[Math.PI / 2, 0, 0]}
-                position={[0, 0, cutReturnDepthScaled / 2]}
-              >
-                <MetalMaterial baseMetal={baseMetal} isAged={isAged} />
-              </mesh>
-            </group>
-          </group>
-
-          {/* Left wall: pivot at cutout left edge, folds down */}
-          <group position={[cxs - chwScaled, gauge / 2, czs]}>
-            <group ref={cutLeftPivotRef}>
-              <mesh
-                geometry={cutLRGeo}
-                rotation={[Math.PI / 2, 0, 0]}
-                position={[cutReturnDepthScaled / 2, 0, 0]}
-              >
-                <MetalMaterial baseMetal={baseMetal} isAged={isAged} />
-              </mesh>
-            </group>
-          </group>
-
-          {/* Right wall: pivot at cutout right edge, folds down */}
-          <group position={[cxs + chwScaled, gauge / 2, czs]}>
-            <group ref={cutRightPivotRef}>
-              <mesh
-                geometry={cutLRGeo}
-                rotation={[Math.PI / 2, 0, 0]}
-                position={[-cutReturnDepthScaled / 2, 0, 0]}
-              >
-                <MetalMaterial baseMetal={baseMetal} isAged={isAged} />
-              </mesh>
-            </group>
-          </group>
-        </>
+      {/* ── Cutout return flat strips — grow via scale during transition ── */}
+      {hasCutout && cutout.returns.enabled && (
+        <CutoutStrips
+          cutout={cutout}
+          gauge={gauge}
+          hd={hd}
+          baseMetal={baseMetal}
+          isAged={isAged}
+          config={config}
+          foldRef={foldRef}
+        />
       )}
     </group>
   );
