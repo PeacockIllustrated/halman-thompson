@@ -229,13 +229,44 @@ function CutoutStrips({
     [strips, gauge]
   );
 
-  // Smooth scale: grow from 0 → 1 as fold goes from 1 → 0
+  // Arc path: strips travel from cutout area, curve below slab, land at final position
+  const arcPath = useMemo(() => {
+    const cxs = cutout.offsetX * SCALE;
+    const czs = cutout.offsetZ * SCALE;
+    // Average Z of all strip positions (their final destination)
+    const stripsCenterZ =
+      strips.length > 0
+        ? strips.reduce((sum, s) => sum + s.z, 0) / strips.length
+        : hd + 0.5;
+
+    // P0: offset that moves strips from final position to cutout area (3D state)
+    const P0 = new THREE.Vector3(cxs, 0, czs - stripsCenterZ);
+    // P2: no offset — strips at their correct flat-view position
+    const P2 = new THREE.Vector3(0, 0, 0);
+    // P1: control point — halfway between, dipping below slab for the arc
+    const arcDip = Math.max(0.8, Math.abs(czs - stripsCenterZ) * 0.4);
+    const P1 = new THREE.Vector3(cxs * 0.5, -arcDip, (czs - stripsCenterZ) * 0.5);
+
+    return { P0, P1, P2 };
+  }, [cutout.offsetX, cutout.offsetZ, hd, strips]);
+
+  // Animate: scale + position along quadratic Bézier arc
   useFrame(() => {
     if (!groupRef.current) return;
-    const t = 1 - foldRef.current; // 0 when 3D, 1 when flat
+    const fold = foldRef.current;
+    const t = 1 - fold; // 0 = 3D (hidden at cutout), 1 = flat (at final position)
     const s = Math.max(0.001, t);
     groupRef.current.scale.set(s, s, s);
     groupRef.current.visible = t > 0.005;
+
+    // Quadratic Bézier: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
+    const { P0, P1, P2 } = arcPath;
+    const mt = 1 - t;
+    groupRef.current.position.set(
+      mt * mt * P0.x + 2 * mt * t * P1.x + t * t * P2.x,
+      mt * mt * P0.y + 2 * mt * t * P1.y + t * t * P2.y,
+      mt * mt * P0.z + 2 * mt * t * P1.z + t * t * P2.z
+    );
   });
 
   if (strips.length === 0) return null;
