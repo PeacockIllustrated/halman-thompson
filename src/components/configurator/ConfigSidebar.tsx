@@ -5,8 +5,6 @@ import { cn } from "@/lib/utils/cn";
 import { FinishSelector } from "./FinishSelector";
 import { DimensionControls } from "./DimensionControls";
 import { WorktopOptions } from "./WorktopOptions";
-import { ViewModeToggle } from "./ViewModeToggle";
-import { ExportButton } from "./ExportButton";
 import { PriceDisplay } from "./PriceDisplay";
 import { ConfigSummary } from "./ConfigSummary";
 import { Button } from "@/components/ui/button";
@@ -136,37 +134,40 @@ export function ConfigSidebar() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* ── Mobile / Tablet Tab Bar ─────────────────── */}
-      <div className="flex-shrink-0 border-b border-ht-dark/10 bg-white lg:hidden">
+      <div className="flex-shrink-0 border-b border-ht-dark/[0.06] bg-white lg:hidden">
         <div className="flex">
           {tabs.map((tab, i) => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={cn(
-                "relative flex flex-1 flex-col items-center gap-0.5 pb-2.5 pt-3 text-[11px] font-medium transition-colors duration-200",
+                "relative flex flex-1 flex-col items-center gap-1 pb-3 pt-3.5 text-[11px] font-medium transition-colors duration-250",
                 activeTab === tab.id
-                  ? "text-ht-gold"
-                  : "text-ht-dark/35 active:text-ht-dark/60"
+                  ? "text-ht-dark"
+                  : "text-ht-dark/30 active:text-ht-dark/50"
               )}
             >
-              {tab.icon}
+              <span className="transition-transform duration-200"
+                style={{ transform: activeTab === tab.id ? "scale(1.1)" : "scale(1)" }}>
+                {tab.icon}
+              </span>
               <span>{tab.label}</span>
-              {/* Active indicator bar */}
+              {/* Active indicator bar — animated width */}
               <span
                 className={cn(
-                  "absolute bottom-0 left-3 right-3 h-0.5 rounded-full transition-all duration-200",
+                  "absolute bottom-0 left-1/2 h-[2px] rounded-full bg-ht-gold transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)]",
                   activeTab === tab.id
-                    ? "bg-ht-gold opacity-100"
-                    : "bg-transparent opacity-0"
+                    ? "w-8 -translate-x-1/2 opacity-100"
+                    : "w-0 -translate-x-1/2 opacity-0"
                 )}
               />
               {/* Step number badge */}
               <span
                 className={cn(
-                  "absolute right-1.5 top-1.5 flex h-[14px] w-[14px] items-center justify-center rounded-full text-[8px] font-bold transition-colors duration-200 sm:right-2 sm:h-4 sm:w-4 sm:text-[9px]",
+                  "absolute right-2 top-2 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[7px] font-bold transition-all duration-250 sm:h-4 sm:w-4 sm:text-[8px]",
                   activeTab === tab.id
-                    ? "bg-ht-gold/15 text-ht-gold"
-                    : "bg-ht-dark/5 text-ht-dark/20"
+                    ? "bg-ht-gold text-white"
+                    : "bg-ht-dark/[0.06] text-ht-dark/25"
                 )}
               >
                 {i + 1}
@@ -177,8 +178,8 @@ export function ConfigSidebar() {
       </div>
 
       {/* ── Scrollable Content Area ─────────────────── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain">
-        <div className="space-y-6 p-4 sm:p-5">
+      <div ref={scrollRef} className="scrollbar-thin flex-1 overflow-y-auto overscroll-contain">
+        <div className="space-y-6 p-5 sm:p-6">
           {/* Material tab */}
           <TabPanel active={activeTab === "material"}>
             <FinishSelector />
@@ -192,9 +193,7 @@ export function ConfigSidebar() {
           {/* Options tab — worktop only */}
           {isWorktop && (
             <TabPanel active={activeTab === "options"} className="space-y-6">
-              <ViewModeToggle />
               <WorktopOptions />
-              <ExportButton />
             </TabPanel>
           )}
 
@@ -207,7 +206,7 @@ export function ConfigSidebar() {
       </div>
 
       {/* ── Sticky Bottom Bar ───────────────────────── */}
-      <div className="flex-shrink-0 border-t border-ht-dark/10 bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-5 sm:py-4">
+      <div className="flex-shrink-0 border-t border-ht-dark/[0.06] bg-white/95 px-5 py-3.5 shadow-[0_-1px_12px_rgba(0,0,0,0.04)] backdrop-blur-sm sm:px-6 sm:py-4">
         <div className="flex items-center gap-3 lg:block">
           {/* Mini price — mobile/tablet only */}
           <div className="min-w-0 flex-shrink-0 lg:hidden">

@@ -36,17 +36,17 @@ export function Slider({
         </div>
       )}
       <SliderPrimitive.Root
-        className="relative flex h-5 w-full touch-none select-none items-center"
+        className="group relative flex h-5 w-full touch-none select-none items-center"
         value={[value]}
         onValueChange={([v]) => onValueChange(v)}
         min={min}
         max={max}
         step={step}
       >
-        <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-ht-dark/10">
-          <SliderPrimitive.Range className="absolute h-full bg-ht-gold" />
+        <SliderPrimitive.Track className="relative h-[5px] w-full grow overflow-hidden rounded-full bg-ht-dark/[0.08]">
+          <SliderPrimitive.Range className="absolute h-full rounded-full bg-ht-gold" />
         </SliderPrimitive.Track>
-        <SliderPrimitive.Thumb className="block h-4 w-4 cursor-grab rounded-full border-2 border-ht-gold bg-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ht-gold/50 active:cursor-grabbing" />
+        <SliderPrimitive.Thumb className="block h-[18px] w-[18px] cursor-grab rounded-full border-2 border-ht-gold bg-white shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-all duration-150 hover:scale-110 hover:shadow-[0_2px_8px_rgba(0,0,0,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ht-gold/50 active:cursor-grabbing active:scale-105" />
       </SliderPrimitive.Root>
     </div>
   );

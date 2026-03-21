@@ -19,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={cn(
-              "h-10 w-full rounded-md border border-ht-dark/20 bg-white px-3 text-sm tabular-nums text-ht-dark placeholder:text-ht-dark/40 focus:border-ht-gold focus:outline-none focus:ring-1 focus:ring-ht-gold/50",
+              "h-10 w-full rounded-xl border border-ht-dark/[0.08] bg-white px-3.5 text-sm tabular-nums text-ht-dark placeholder:text-ht-dark/35 transition-colors duration-200 focus:border-ht-gold/60 focus:outline-none focus:ring-2 focus:ring-ht-gold/15",
               unit && "pr-10",
               className
             )}

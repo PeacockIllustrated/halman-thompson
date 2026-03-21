@@ -28,7 +28,7 @@ function HTLogo({ className }: { className?: string }) {
 
 export function Header() {
   return (
-    <header className="flex-shrink-0 border-b border-ht-gold/20 bg-ht-dark px-4 py-2 sm:px-6 sm:py-3 lg:py-4">
+    <header className="flex-shrink-0 border-b border-white/[0.06] bg-ht-dark px-4 py-2 sm:px-6 sm:py-3 lg:py-4">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <Link href="/" className="flex items-center gap-2 sm:gap-3">
           <HTLogo className="h-7 w-auto text-ht-gold sm:h-8 lg:h-9" />
@@ -50,7 +50,7 @@ export function Header() {
           </Link>
           <Link
             href="/configure/splashback"
-            className="rounded-md bg-ht-gold/90 px-3 py-1.5 text-xs font-medium text-ht-dark transition-colors hover:bg-ht-gold sm:px-4 sm:py-2 sm:text-sm"
+            className="rounded-lg bg-ht-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:bg-ht-gold/90 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm"
           >
             Configure
           </Link>

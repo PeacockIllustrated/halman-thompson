@@ -34,27 +34,27 @@ export function PriceDisplay() {
 
   if (!selectedFinish) {
     return (
-      <div className="rounded-xl border border-ht-gold/20 bg-white p-5">
-        <p className="text-sm text-ht-dark/50">Select a finish to see pricing</p>
+      <div className="rounded-xl border border-ht-dark/[0.06] bg-gradient-to-br from-white to-ht-gold/[0.02] p-5">
+        <p className="text-sm text-ht-dark/40">Select a finish to see pricing</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-ht-gold/20 bg-white p-5">
+    <div className="rounded-xl border border-ht-dark/[0.06] bg-gradient-to-br from-white to-ht-gold/[0.02] p-5">
       <div className="flex items-baseline justify-between">
-        <span className="text-sm font-medium text-ht-dark/60">Total Price</span>
+        <span className="text-xs font-medium uppercase tracking-wider text-ht-dark/45">Total Price</span>
         {isPriceLoading ? (
-          <div className="h-8 w-24 animate-pulse rounded bg-ht-dark/10" />
+          <div className="h-8 w-24 animate-pulse rounded-lg bg-ht-dark/[0.06]" />
         ) : (
-          <span className="font-serif text-3xl font-bold text-ht-dark">
+          <span className="font-serif text-3xl font-bold tracking-tight text-ht-dark">
             {calculatedPrice !== null ? `£${calculatedPrice.toFixed(2)}` : "—"}
           </span>
         )}
       </div>
 
       {priceBreakdown && !isPriceLoading && (
-        <div className="mt-4 space-y-1.5 border-t border-ht-dark/10 pt-3">
+        <div className="mt-4 space-y-1.5 border-t border-ht-dark/[0.06] pt-3">
           <BreakdownLine label="Base material" value={priceBreakdown.baseMaterial} />
           {priceBreakdown.finishSurcharge > 0 && (
             <BreakdownLine label="Finish" value={priceBreakdown.finishSurcharge} />
@@ -70,14 +70,14 @@ export function PriceDisplay() {
             <BreakdownLine label="Multi-panel" value={priceBreakdown.multiPanelSurcharge} />
           )}
           <BreakdownLine label="Delivery" value={priceBreakdown.deliveryEstimate} />
-          <div className="border-t border-ht-dark/10 pt-1.5">
+          <div className="border-t border-ht-dark/[0.06] pt-1.5">
             <BreakdownLine label="Subtotal" value={priceBreakdown.subtotal} bold />
             <BreakdownLine label="VAT (20%)" value={priceBreakdown.vat} />
           </div>
         </div>
       )}
 
-      <p className="mt-3 text-[10px] text-ht-dark/40">
+      <p className="mt-3 text-[10px] text-ht-dark/35">
         Prices include delivery. VAT at 20%. Estimated 5-8 week lead time.
       </p>
     </div>

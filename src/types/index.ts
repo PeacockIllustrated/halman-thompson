@@ -71,6 +71,7 @@ export interface CutoutConfig {
   offsetX: number;
   offsetZ: number;
   returns: WorktopEdgeConfig;
+  lip: WorktopEdgeConfig; // upward lip (mutually exclusive with returns)
 }
 
 export interface WorktopConfig {

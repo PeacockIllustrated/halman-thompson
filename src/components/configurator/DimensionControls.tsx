@@ -45,7 +45,7 @@ export function DimensionControls() {
 
   return (
     <div className="space-y-5">
-      <h3 className="font-serif text-lg font-semibold">Dimensions</h3>
+      <h3 className="font-serif text-lg font-semibold tracking-wide">Dimensions</h3>
 
       <div className="space-y-2">
         <Slider
@@ -92,7 +92,7 @@ export function DimensionControls() {
         <select
           value={thickness}
           onChange={(e) => setThickness(Number(e.target.value))}
-          className="h-10 w-full rounded-md border border-ht-dark/20 bg-white px-3 text-sm text-ht-dark focus:border-ht-gold focus:outline-none focus:ring-1 focus:ring-ht-gold/50"
+          className="h-10 w-full rounded-xl border border-ht-dark/[0.08] bg-white px-3.5 text-sm text-ht-dark transition-colors duration-200 focus:border-ht-gold/60 focus:outline-none focus:ring-2 focus:ring-ht-gold/15"
         >
           {product.availableThicknesses.map((t) => (
             <option key={t} value={t}>
@@ -103,9 +103,9 @@ export function DimensionControls() {
       </div>
 
       {isMultiPanel && (
-        <div className="rounded-lg border border-amber-300/50 bg-amber-50 p-3">
+        <div className="animate-[scaleIn_200ms_ease-out] rounded-xl border border-amber-200/60 bg-amber-50/80 p-3.5">
           <p className="text-sm font-medium text-amber-800">Multi-Panel Fabrication</p>
-          <p className="mt-1 text-xs text-amber-700">
+          <p className="mt-1 text-xs text-amber-700/80">
             This piece requires {panelCount} panels aged together for visual
             consistency. A surcharge of &pound;{(panelCount - 1) * 50} applies.
           </p>

@@ -29,6 +29,7 @@ export const DEFAULT_WORKTOP_CONFIG: WorktopConfig = {
     offsetX: 0,
     offsetZ: 0,
     returns: { enabled: true, depth: 30 },
+    lip: { enabled: false, depth: 30 },
   },
   splitPosition: null,
   splitDirection: null,

@@ -25,13 +25,13 @@ function Toggle({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors ${
-          checked ? "bg-ht-gold" : "bg-ht-dark/20"
+        className={`relative inline-flex h-[22px] w-10 flex-shrink-0 items-center rounded-full transition-colors duration-200 ${
+          checked ? "bg-ht-gold" : "bg-ht-dark/15"
         }`}
       >
         <span
-          className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${
-            checked ? "translate-x-[18px]" : "translate-x-[2px]"
+          className={`inline-block h-4 w-4 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-transform duration-200 ${
+            checked ? "translate-x-[22px]" : "translate-x-[3px]"
           }`}
         />
       </button>
@@ -55,7 +55,7 @@ function EdgeControl({
   unit?: string;
 }) {
   return (
-    <div className="space-y-2 rounded-lg border border-ht-dark/10 p-3">
+    <div className="space-y-2 rounded-xl border border-ht-dark/[0.06] p-3.5">
       <Toggle
         label={label}
         checked={config.enabled}
@@ -119,7 +119,7 @@ export function WorktopOptions() {
     <div className="space-y-5">
       {/* ── Edge Profile ─────────────────────────── */}
       <div className="space-y-3">
-        <h3 className="font-serif text-lg font-semibold">Edge Profile</h3>
+        <h3 className="font-serif text-lg font-semibold tracking-wide">Edge Profile</h3>
         <Slider
           label="Corner Radius"
           value={config.cornerRadius}
@@ -177,8 +177,8 @@ export function WorktopOptions() {
 
       {/* ── Flat Sheet Info ──────────────────────── */}
       {flatSheet && (
-        <div className="rounded-lg border border-ht-dark/10 p-3 space-y-1">
-          <h3 className="font-serif text-lg font-semibold">Flat Sheet</h3>
+        <div className="rounded-xl border border-ht-dark/[0.06] p-3.5 space-y-1">
+          <h3 className="font-serif text-lg font-semibold tracking-wide">Flat Sheet</h3>
           <p className="text-sm text-ht-dark/60">
             {flatSheet.totalWidth}mm &times; {flatSheet.totalHeight}mm
           </p>
@@ -195,8 +195,8 @@ export function WorktopOptions() {
 
       {/* ── Sink Cutout ──────────────────────────── */}
       <div className="space-y-3">
-        <h3 className="font-serif text-lg font-semibold">Sink Cutout</h3>
-        <div className="rounded-lg border border-ht-dark/10 p-3">
+        <h3 className="font-serif text-lg font-semibold tracking-wide">Sink Cutout</h3>
+        <div className="rounded-xl border border-ht-dark/[0.06] p-3.5">
           <Toggle
             label="Add Sink Cutout"
             checked={config.cutout.enabled}
@@ -209,16 +209,24 @@ export function WorktopOptions() {
             {/* Shape selector */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-ht-dark">Shape</label>
-              <div className="flex gap-1 rounded-lg border border-ht-dark/10 p-1">
+              <div className="relative flex rounded-xl bg-ht-dark/[0.06] p-1">
+                {/* Animated sliding pill */}
+                <span
+                  className="pointer-events-none absolute inset-y-1 rounded-[10px] bg-ht-dark shadow-sm transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)]"
+                  style={{
+                    width: `calc(${100 / CUTOUT_SHAPES.length}% - 4px)`,
+                    transform: `translateX(calc(${CUTOUT_SHAPES.findIndex(s => s.value === config.cutout.shape) * 100}% + ${CUTOUT_SHAPES.findIndex(s => s.value === config.cutout.shape) * 4}px + 2px))`,
+                  }}
+                />
                 {CUTOUT_SHAPES.map((s) => (
                   <button
                     key={s.value}
                     type="button"
                     onClick={() => updateCutout({ shape: s.value })}
-                    className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    className={`relative z-10 flex-1 rounded-[10px] px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
                       config.cutout.shape === s.value
-                        ? "bg-ht-gold text-white"
-                        : "text-ht-dark/60 hover:bg-ht-dark/5"
+                        ? "text-white"
+                        : "text-ht-dark/50 hover:text-ht-dark/70"
                     }`}
                   >
                     {s.label}
@@ -294,14 +302,16 @@ export function WorktopOptions() {
               />
             )}
 
-            {/* Cutout returns */}
-            <div className="rounded-lg border border-ht-dark/10 p-3 space-y-2">
+            {/* Cutout returns (down) */}
+            <div className="rounded-xl border border-ht-dark/[0.06] p-3.5 space-y-2">
               <Toggle
                 label="Cutout Returns"
                 checked={config.cutout.returns.enabled}
                 onChange={(v) =>
                   updateCutout({
                     returns: { ...config.cutout.returns, enabled: v },
+                    // Disable lip when returns are enabled
+                    ...(v ? { lip: { ...config.cutout.lip, enabled: false } } : {}),
                   })
                 }
               />
@@ -312,6 +322,36 @@ export function WorktopOptions() {
                   onValueChange={(v) =>
                     updateCutout({
                       returns: { ...config.cutout.returns, depth: v },
+                    })
+                  }
+                  min={15}
+                  max={60}
+                  step={5}
+                  unit="mm"
+                />
+              )}
+            </div>
+
+            {/* Cutout lip (up) */}
+            <div className="rounded-xl border border-ht-dark/[0.06] p-3.5 space-y-2">
+              <Toggle
+                label="Cutout Lip"
+                checked={config.cutout.lip.enabled}
+                onChange={(v) =>
+                  updateCutout({
+                    lip: { ...config.cutout.lip, enabled: v },
+                    // Disable returns when lip is enabled
+                    ...(v ? { returns: { ...config.cutout.returns, enabled: false } } : {}),
+                  })
+                }
+              />
+              {config.cutout.lip.enabled && (
+                <Slider
+                  label="Lip Height"
+                  value={config.cutout.lip.depth}
+                  onValueChange={(v) =>
+                    updateCutout({
+                      lip: { ...config.cutout.lip, depth: v },
                     })
                   }
                   min={15}

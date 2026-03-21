@@ -14,9 +14,9 @@ export function ConfigSummary() {
   } = useConfiguratorStore();
 
   return (
-    <div className="space-y-2">
-      <h3 className="font-serif text-lg font-semibold">Your Configuration</h3>
-      <div className="space-y-1.5 text-sm">
+    <div className="space-y-3">
+      <h3 className="font-serif text-lg font-semibold tracking-wide">Your Configuration</h3>
+      <div className="space-y-2 rounded-xl border border-ht-dark/[0.06] bg-gradient-to-br from-white to-ht-dark/[0.01] p-4 text-sm">
         <SummaryRow label="Product" value={productType.replace(/_/g, " ")} />
         <SummaryRow label="Finish" value={selectedFinish?.name ?? "Not selected"} />
         <SummaryRow label="Width" value={`${width}mm`} />
@@ -40,8 +40,8 @@ export function ConfigSummary() {
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between">
-      <span className="text-ht-dark/50">{label}</span>
+    <div className="flex justify-between py-0.5">
+      <span className="text-ht-dark/40">{label}</span>
       <span className="font-medium capitalize text-ht-dark">{value}</span>
     </div>
   );

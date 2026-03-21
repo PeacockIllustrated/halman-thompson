@@ -1,5 +1,20 @@
 import type { FlatSheet, WorktopConfig } from "@/types";
 
+/** Whether the cutout has any edge treatment (returns down OR lip up) */
+function hasCutoutEdge(cfg: WorktopConfig): boolean {
+  return cfg.cutout.enabled && (cfg.cutout.returns.enabled || cfg.cutout.lip.enabled);
+}
+
+/** Effective cutout edge depth in mm (returns or lip, whichever is active) */
+function cutoutEdgeDepth(cfg: WorktopConfig): number {
+  return cfg.cutout.returns.enabled ? cfg.cutout.returns.depth : cfg.cutout.lip.depth;
+}
+
+/** Label for cutout edge treatment */
+function cutoutEdgeLabel(cfg: WorktopConfig): string {
+  return cfg.cutout.lip.enabled ? "LIP" : "RETURN";
+}
+
 // ── Print units: 1mm = 2.835pt ─────────────────────────────────
 const MM_TO_PT = 842 / 297;
 
@@ -497,11 +512,11 @@ function drawPreview(w: number, d: number, cfg: WorktopConfig, ox: number, oy: n
   return s;
 }
 
-/** Rectangular cutout returns — side strips + corner arc strips (shown in sidebar) */
+/** Rectangular cutout returns/lip — side strips + corner arc strips (shown in sidebar) */
 function drawReturns(cfg: WorktopConfig, ox: number, oy: number, aw: number, ah: number, S: number): string {
-  if (!cfg.cutout.enabled || !cfg.cutout.returns.enabled || cfg.cutout.shape === "oval") return "";
+  if (!hasCutoutEdge(cfg) || cfg.cutout.shape === "oval") return "";
   const c = cfg.cutout;
-  const rD = c.returns.depth;
+  const rD = cutoutEdgeDepth(cfg);
   const cr = Math.min(c.cornerRadius, c.width / 4, c.depth / 4);
   const hasCorners = cr > 0;
   const arcLen = hasCorners ? Math.round((Math.PI * cr) / 2 * 10) / 10 : 0;
@@ -511,7 +526,8 @@ function drawReturns(cfg: WorktopConfig, ox: number, oy: number, aw: number, ah:
   const pieceCount = hasCorners ? 8 : 4;
 
   let s = "";
-  s += `<text x="${ox + aw / 2}" y="${oy + 4 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${6 * S}" fill="${K}" letter-spacing="${S}" font-weight="bold">CUTOUT RETURNS ×${pieceCount}</text>\n`;
+  const edgeLabel = cutoutEdgeLabel(cfg);
+  s += `<text x="${ox + aw / 2}" y="${oy + 4 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${6 * S}" fill="${K}" letter-spacing="${S}" font-weight="bold">CUTOUT ${edgeLabel}S ×${pieceCount}</text>\n`;
   s += `<text x="${ox + aw / 2}" y="${oy + 13 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4.5 * S}" fill="${G}">(welded to cutout edges)</text>\n`;
   const to = 22 * S;
   const gap = 10 * S;
@@ -568,20 +584,21 @@ function drawReturns(cfg: WorktopConfig, ox: number, oy: number, aw: number, ah:
 
 /** Pre-compute extra height needed for oval cutout strips below pattern */
 function ovalStripsH(cfg: WorktopConfig, aw: number, S: number): number {
-  if (!cfg.cutout.enabled || !cfg.cutout.returns.enabled || cfg.cutout.shape !== "oval") return 0;
+  if (!hasCutoutEdge(cfg) || cfg.cutout.shape !== "oval") return 0;
   const c = cfg.cutout;
+  const rD = cutoutEdgeDepth(cfg);
   const circ = ellipseCirc(c.width / 2, c.depth / 2);
   const stripCount = Math.ceil(circ / 2000);
   const stripLen = circ / stripCount;
-  const sc = pickScale(aw - 20 * S, 99999, stripLen, c.returns.depth);
-  return 26 * S + (p(c.returns.depth, sc) + 16 * S) * stripCount;
+  const sc = pickScale(aw - 20 * S, 99999, stripLen, rD);
+  return 26 * S + (p(rD, sc) + 16 * S) * stripCount;
 }
 
 /** Oval cutout circumference strips — drawn below the flat pattern with full width */
 function drawOvalStrips(cfg: WorktopConfig, ox: number, oy: number, aw: number, S: number): string {
-  if (!cfg.cutout.enabled || !cfg.cutout.returns.enabled || cfg.cutout.shape !== "oval") return "";
+  if (!hasCutoutEdge(cfg) || cfg.cutout.shape !== "oval") return "";
   const c = cfg.cutout;
-  const rD = c.returns.depth;
+  const rD = cutoutEdgeDepth(cfg);
   const circ = ellipseCirc(c.width / 2, c.depth / 2);
   const maxStrip = 2000;
   const stripCount = Math.ceil(circ / maxStrip);
@@ -591,7 +608,8 @@ function drawOvalStrips(cfg: WorktopConfig, ox: number, oy: number, aw: number, 
   // Separator
   s += `<line x1="${ox + 10 * S}" y1="${oy}" x2="${ox + aw - 10 * S}" y2="${oy}" stroke="${LG}" stroke-width="${0.3 * S}" stroke-dasharray="${3 * S},${3 * S}"/>\n`;
   // Title
-  s += `<text x="${ox + aw / 2}" y="${oy + 10 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${6 * S}" fill="${K}" letter-spacing="${S}" font-weight="bold">OVAL CUTOUT RETURN${stripCount > 1 ? "S" : ""}</text>\n`;
+  const edgeLabel = cutoutEdgeLabel(cfg);
+  s += `<text x="${ox + aw / 2}" y="${oy + 10 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${6 * S}" fill="${K}" letter-spacing="${S}" font-weight="bold">OVAL CUTOUT ${edgeLabel}${stripCount > 1 ? "S" : ""}</text>\n`;
   s += `<text x="${ox + aw / 2}" y="${oy + 19 * S}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${4.5 * S}" fill="${G}">(bent to oval profile — circ. ${Math.round(circ)}mm${stripCount > 1 ? `, ${stripCount} strips` : ""})</text>\n`;
 
   const to = 26 * S;
@@ -650,7 +668,7 @@ function generateWorkshop(opt: SvgExportOptions): string {
   const patAreaH = contentH;
 
   // Reserve space for oval strips below pattern if needed
-  const isOval = cfg.cutout.enabled && cfg.cutout.returns.enabled && cfg.cutout.shape === "oval";
+  const isOval = hasCutoutEdge(cfg) && cfg.cutout.shape === "oval";
   const ovalReserve = isOval ? 80 * S : 0;
 
   // Pick scale to fit the flat pattern into patArea with padding
@@ -663,7 +681,7 @@ function generateWorkshop(opt: SvgExportOptions): string {
   const sbX = cX + patAreaW + sbGap;
 
   // Sidebar: rectangular returns in sidebar, oval handled below pattern
-  const hasRetInSidebar = cfg.cutout.enabled && cfg.cutout.returns.enabled && cfg.cutout.shape !== "oval";
+  const hasRetInSidebar = hasCutoutEdge(cfg) && cfg.cutout.shape !== "oval";
   let fpH: number, rY: number, rH: number;
   if (hasRetInSidebar) {
     fpH = Math.floor(contentH * 0.50);
@@ -728,7 +746,7 @@ function generateProduction(opt: SvgExportOptions): string {
   const sp = B_SIDE * S;
 
   // Extra height for oval strips below pattern
-  const isOval = cfg.cutout.enabled && cfg.cutout.returns.enabled && cfg.cutout.shape === "oval";
+  const isOval = hasCutoutEdge(cfg) && cfg.cutout.shape === "oval";
   const ovalExtra = isOval ? ovalStripsH(cfg, patW, S) + 12 * S : 0;
   const patH = basePatH + ovalExtra;
 
@@ -742,7 +760,7 @@ function generateProduction(opt: SvgExportOptions): string {
   const sbX = cX + patW + sbGap;
 
   // Sidebar: rectangular returns in sidebar, oval handled below pattern
-  const hasRetInSidebar = cfg.cutout.enabled && cfg.cutout.returns.enabled && cfg.cutout.shape !== "oval";
+  const hasRetInSidebar = hasCutoutEdge(cfg) && cfg.cutout.shape !== "oval";
   let fpH: number, rY: number, rH: number;
   if (hasRetInSidebar) {
     fpH = Math.floor(contentH * 0.50);

@@ -191,7 +191,9 @@ function CutoutStrips({
   const groupRef = useRef<THREE.Group>(null);
 
   const strips = useMemo(() => {
-    const returnD = cutout.returns.depth * SCALE;
+    const hasCutoutEdge = cutout.returns.enabled || cutout.lip.enabled;
+    if (!hasCutoutEdge) return [];
+    const returnD = (cutout.returns.enabled ? cutout.returns.depth : cutout.lip.depth) * SCALE;
     const frontEdge =
       hd + (config.frontReturn.enabled ? config.frontReturn.depth * SCALE : 0);
     const startZ = frontEdge + 0.4; // 40mm gap below front edge
@@ -742,10 +744,13 @@ export function WorktopModel({
   const cutout = config.cutout;
   const hasCutout = cutout.enabled;
 
-  // Pre-compute cutout dimensions (needed for slab hole, return ring, and flat strips)
+  // Pre-compute cutout dimensions (needed for slab hole, return/lip ring, and flat strips)
   const cxs = cutout.offsetX * SCALE;
   const czs = cutout.offsetZ * SCALE;
-  const cutReturnDepthScaled = cutout.returns.depth * SCALE;
+  const hasCutoutEdge = cutout.returns.enabled || cutout.lip.enabled;
+  const cutoutGoesUp = cutout.lip.enabled;
+  const cutEdgeDepthMm = cutout.returns.enabled ? cutout.returns.depth : cutout.lip.depth;
+  const cutReturnDepthScaled = cutEdgeDepthMm * SCALE;
   const chwScaled = (cutout.width * SCALE) / 2;
   const chdScaled =
     ((cutout.shape === "square" ? cutout.width : cutout.depth) * SCALE) / 2;
@@ -822,7 +827,7 @@ export function WorktopModel({
       rightPivotRef.current.rotation.z = -fold * Math.PI / 2;
     }
 
-    // ── Cutout return ring — shrinks to 0 when going flat ──
+    // ── Cutout return/lip ring — shrinks to 0 when going flat ──
     // (both oval and rectangular use the same Y-scale crossfade)
     if (cutoutRingWrapperRef.current) {
       cutoutRingWrapperRef.current.scale.y = Math.max(0.001, fold);
@@ -834,11 +839,14 @@ export function WorktopModel({
       cornerPiece3DRef.current.scale.y = Math.max(0.001, fold);
       cornerPiece3DRef.current.visible = fold > 0.005;
     }
-    // ── Corner flat strips — Y-scale only (keeps XZ positions stable) ──
+    // ── Corner flat strips — scale each mesh individually at its own center ──
     if (cornerStripRef.current) {
       const t = 1 - fold;
-      cornerStripRef.current.scale.y = Math.max(0.001, t);
+      const s = Math.max(0.001, t);
       cornerStripRef.current.visible = t > 0.005;
+      for (const child of cornerStripRef.current.children) {
+        child.scale.set(s, s, s);
+      }
     }
   });
 
@@ -1065,7 +1073,7 @@ export function WorktopModel({
 
   // Oval: ring geometry that scales Y for smooth fold animation
   const ovalReturnGeo = useMemo(() => {
-    if (!hasCutout || !cutout.returns.enabled || cutout.shape !== "oval")
+    if (!hasCutout || !hasCutoutEdge || cutout.shape !== "oval")
       return null;
     const ring = new THREE.Shape();
     ring.absellipse(0, 0, chwScaled, chdScaled, 0, Math.PI * 2, false, 0);
@@ -1083,12 +1091,12 @@ export function WorktopModel({
         curveSegments: 64,
       })
     );
-  }, [hasCutout, cutout.returns.enabled, cutout.shape,
+  }, [hasCutout, hasCutoutEdge, cutout.shape,
       chwScaled, chdScaled, cutReturnDepthScaled, gauge]);
 
   // Rectangular: welded ring geometry (shrinks via Y-scale during transition)
   const rectReturnGeo = useMemo(() => {
-    if (!hasCutout || !cutout.returns.enabled || cutout.shape === "oval")
+    if (!hasCutout || !hasCutoutEdge || cutout.shape === "oval")
       return null;
     const shape = buildRectCutoutReturnShape(cxs, czs, chwScaled, chdScaled, cutoutCR, gauge);
     return smoothGeo(
@@ -1098,7 +1106,7 @@ export function WorktopModel({
         curveSegments: 48,
       })
     );
-  }, [hasCutout, cutout.returns.enabled, cutout.shape,
+  }, [hasCutout, hasCutoutEdge, cutout.shape,
       cxs, czs, chwScaled, chdScaled, cutoutCR, cutReturnDepthScaled, gauge]);
 
   return (
@@ -1239,14 +1247,14 @@ export function WorktopModel({
         </group>
       )}
 
-      {/* ── Cutout return ring — shrinks via Y-scale during transition ── */}
-      {hasCutout && cutout.returns.enabled && (
-        <group position={[0, -gauge / 2, 0]}>
+      {/* ── Cutout return/lip ring — shrinks via Y-scale during transition ── */}
+      {hasCutout && hasCutoutEdge && (
+        <group position={[0, cutoutGoesUp ? gauge / 2 : -gauge / 2, 0]}>
           <group ref={cutoutRingWrapperRef}>
             {cutout.shape === "oval" && ovalReturnGeo && (
               <mesh
                 geometry={ovalReturnGeo}
-                rotation={[Math.PI / 2, 0, 0]}
+                rotation={[cutoutGoesUp ? -Math.PI / 2 : Math.PI / 2, 0, 0]}
                 position={[cxs, 0, czs]}
               >
                 <MetalMaterial baseMetal={baseMetal} isAged={isAged} doubleSide />
@@ -1255,7 +1263,7 @@ export function WorktopModel({
             {cutout.shape !== "oval" && rectReturnGeo && (
               <mesh
                 geometry={rectReturnGeo}
-                rotation={[Math.PI / 2, 0, 0]}
+                rotation={[cutoutGoesUp ? -Math.PI / 2 : Math.PI / 2, 0, 0]}
                 position={[0, 0, 0]}
               >
                 <MetalMaterial baseMetal={baseMetal} isAged={isAged} doubleSide />
@@ -1265,8 +1273,8 @@ export function WorktopModel({
         </group>
       )}
 
-      {/* ── Cutout return flat strips — grow via scale during transition ── */}
-      {hasCutout && cutout.returns.enabled && (
+      {/* ── Cutout return/lip flat strips — grow via scale during transition ── */}
+      {hasCutout && hasCutoutEdge && (
         <CutoutStrips
           cutout={cutout}
           gauge={gauge}
