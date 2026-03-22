@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
+import { PageTransition } from "@/components/layout/PageTransition";
+import { SplashScreen } from "@/components/layout/SplashScreen";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,7 +41,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${cinzel.variable}`}>
       <body className="min-h-screen bg-ht-cream text-ht-dark antialiased">
-        {children}
+        <SplashScreen />
+        <PageTransition>{children}</PageTransition>
       </body>
     </html>
   );
