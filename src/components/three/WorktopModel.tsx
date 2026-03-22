@@ -811,18 +811,11 @@ export function WorktopModel({
     }
 
     // Left return: flat = extends in -X, folded = hangs down (-Y)
-    // Rotating around Z at left edge: +PI/2 maps -X → -Y
-    //   rotation around Z by θ: X' = X*cos(θ) - Y*sin(θ), Y' = X*sin(θ) + Y*cos(θ)
-    //   Point (-leftD/2, 0, 0), θ = PI/2:
-    //     X' = 0, Y' = -leftD/2 → goes DOWN, correct!
     if (leftPivotRef.current) {
       leftPivotRef.current.rotation.z = fold * Math.PI / 2;
     }
 
     // Right return: flat = extends in +X, folded = hangs down (-Y)
-    // Rotating around Z at right edge: -PI/2 maps +X → -Y
-    //   Point (rightD/2, 0, 0), θ = -PI/2:
-    //     X' = 0, Y' = -rightD/2 → goes DOWN, correct!
     if (rightPivotRef.current) {
       rightPivotRef.current.rotation.z = -fold * Math.PI / 2;
     }
@@ -901,15 +894,16 @@ export function WorktopModel({
 
   // ── Return/upstand geometries — shortened by corner radii ──
 
+  const hasFrontEdge = config.frontReturn.enabled;
   const frontReturnDepthScaled = config.frontReturn.depth * SCALE;
   const shortFrontW = rf > 0.0001 ? w - 2 * rf : w;
   const frontReturnGeo = useMemo(() => {
-    if (!config.frontReturn.enabled) return null;
+    if (!hasFrontEdge) return null;
     const shape = buildRectShape(shortFrontW, frontReturnDepthScaled);
     return smoothGeo(
       new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
     );
-  }, [shortFrontW, gauge, frontReturnDepthScaled, config.frontReturn.enabled]);
+  }, [shortFrontW, gauge, frontReturnDepthScaled, hasFrontEdge]);
 
   const isBackUpstand = config.backUpstand.enabled;
   const isBackReturn = config.backReturn.enabled && !isBackUpstand;
@@ -927,27 +921,29 @@ export function WorktopModel({
     );
   }, [shortBackW, gauge, backDepthScaled, isBackUpstand, isBackReturn]);
 
+  const hasLeftEdge = config.leftReturn.enabled;
   const leftDepthScaled = config.leftReturn.depth * SCALE;
   const shortSideD = d - rf - rb;
   const sideReturnOffsetZ = (rb - rf) / 2;
   const leftReturnGeo = useMemo(() => {
-    if (!config.leftReturn.enabled) return null;
+    if (!hasLeftEdge) return null;
     const usedD = shortSideD > 0.001 ? shortSideD : d;
     const shape = buildRectShape(leftDepthScaled, usedD);
     return smoothGeo(
       new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
     );
-  }, [shortSideD, d, gauge, leftDepthScaled, config.leftReturn.enabled]);
+  }, [shortSideD, d, gauge, leftDepthScaled, hasLeftEdge]);
 
+  const hasRightEdge = config.rightReturn.enabled;
   const rightDepthScaled = config.rightReturn.depth * SCALE;
   const rightReturnGeo = useMemo(() => {
-    if (!config.rightReturn.enabled) return null;
+    if (!hasRightEdge) return null;
     const usedD = shortSideD > 0.001 ? shortSideD : d;
     const shape = buildRectShape(rightDepthScaled, usedD);
     return smoothGeo(
       new THREE.ExtrudeGeometry(shape, { depth: gauge, bevelEnabled: false })
     );
-  }, [shortSideD, d, gauge, rightDepthScaled, config.rightReturn.enabled]);
+  }, [shortSideD, d, gauge, rightDepthScaled, hasRightEdge]);
 
   // ── Worktop corner pieces (quarter-annulus, crossfade animated) ──
 

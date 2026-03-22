@@ -6,6 +6,7 @@ import { join } from "path";
 // ── Config A: Rectangle cutout with returns + corner radius ──
 const configRect = {
   cornerRadius: 12,
+  returnsLinked: true,
   frontReturn: { enabled: true, depth: 45 },
   backUpstand: { enabled: true, depth: 100 },
   backReturn: { enabled: false, depth: 45 },
@@ -29,6 +30,7 @@ const configRect = {
 // ── Config B: Oval cutout with returns + corner radius ──
 const configOval = {
   cornerRadius: 20,
+  returnsLinked: true,
   frontReturn: { enabled: true, depth: 45 },
   backUpstand: { enabled: false, depth: 100 },
   backReturn: { enabled: true, depth: 45 },
@@ -52,6 +54,7 @@ const configOval = {
 // ── Config C: No cutout, no radius — edge case ──
 const configPlain = {
   cornerRadius: 0,
+  returnsLinked: true,
   frontReturn: { enabled: true, depth: 45 },
   backUpstand: { enabled: true, depth: 100 },
   backReturn: { enabled: false, depth: 45 },
@@ -75,6 +78,7 @@ const configPlain = {
 // ── Config D: Large oval that needs multi-strip ──
 const configLargeOval = {
   cornerRadius: 30,
+  returnsLinked: true,
   frontReturn: { enabled: true, depth: 45 },
   backUpstand: { enabled: false, depth: 100 },
   backReturn: { enabled: false, depth: 45 },

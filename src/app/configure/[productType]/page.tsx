@@ -6,6 +6,8 @@ import { Header } from "@/components/layout/Header";
 import { ProductViewer } from "@/components/configurator/ProductViewer";
 import { ConfigSidebar } from "@/components/configurator/ConfigSidebar";
 import { ViewModeToggle } from "@/components/configurator/ViewModeToggle";
+import { EditModeToggle } from "@/components/configurator/EditModeToggle";
+import { CutoutShapeSelector } from "@/components/configurator/CutoutShapeSelector";
 import { ExportButton } from "@/components/configurator/ExportButton";
 import { useConfiguratorStore } from "@/stores/configurator";
 import { getProductType } from "@/lib/products/catalogue";
@@ -47,8 +49,13 @@ export default function ConfigurePage() {
               {productConfig.name} Configurator
             </h1>
           </div>
-          {/* View mode toggle — bottom-right of viewport */}
-          <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4">
+          {/* Cutout shape selector — top-right of viewport */}
+          <div className="absolute right-3 top-3 sm:right-4 sm:top-4">
+            <CutoutShapeSelector />
+          </div>
+          {/* View mode toggle + edit toggle — bottom-right of viewport */}
+          <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 flex items-center gap-2">
+            <EditModeToggle />
             <ViewModeToggle />
           </div>
           {/* Export button — bottom-left of viewport */}

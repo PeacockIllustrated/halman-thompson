@@ -7,6 +7,7 @@ import { WorktopModel } from "@/components/three/WorktopModel";
 import { SceneEnvironment } from "@/components/three/SceneEnvironment";
 import { PanelLines } from "@/components/three/PanelLines";
 import { DimensionLabels } from "@/components/three/DimensionLabels";
+import { DimensionHandles } from "@/components/three/DimensionHandles";
 import { useConfiguratorStore } from "@/stores/configurator";
 
 function LoadingFallback() {
@@ -64,6 +65,7 @@ function Scene() {
     selectedFinish,
     panelLayout,
     worktopConfig,
+    editMode,
   } = useConfiguratorStore();
 
   const isAged = selectedFinish?.isAged ?? false;
@@ -94,6 +96,14 @@ function Scene() {
             height={height}
             orientation="horizontal"
           />
+          {editMode && (
+            <DimensionHandles
+              width={width}
+              depth={height}
+              thickness={thickness}
+              config={worktopConfig}
+            />
+          )}
         </>
       ) : (
         <>

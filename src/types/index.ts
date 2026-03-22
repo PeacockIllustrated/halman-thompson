@@ -76,6 +76,7 @@ export interface CutoutConfig {
 
 export interface WorktopConfig {
   cornerRadius: number; // mm
+  returnsLinked: boolean; // when true, front/left/right share same depth
   frontReturn: WorktopEdgeConfig;
   backUpstand: WorktopEdgeConfig;
   backReturn: WorktopEdgeConfig;
@@ -352,6 +353,7 @@ export interface ConfiguratorState {
 
   // UI
   viewMode: ViewMode;
+  editMode: boolean;
   configStep: number;
   isConfigComplete: boolean;
 
@@ -366,6 +368,7 @@ export interface ConfiguratorState {
   setSignageConfig: (config: Partial<SignageConfig>) => void;
   setWorktopConfig: (config: WorktopConfig) => void;
   setViewMode: (mode: ViewMode) => void;
+  setEditMode: (mode: boolean) => void;
   calculatePrice: () => Promise<void>;
   resetConfig: () => void;
   getSnapshot: () => ConfigSnapshot;

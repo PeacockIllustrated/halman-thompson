@@ -3,6 +3,7 @@ import type { WorktopConfig } from "@/types";
 
 const BASE_CONFIG: WorktopConfig = {
   cornerRadius: 12,
+  returnsLinked: true,
   frontReturn: { enabled: true, depth: 45 },
   backUpstand: { enabled: true, depth: 100 },
   backReturn: { enabled: false, depth: 45 },

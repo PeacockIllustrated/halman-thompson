@@ -15,6 +15,7 @@ import { calculateFlatSheet } from "@/lib/worktop/flatSheet";
 
 export const DEFAULT_WORKTOP_CONFIG: WorktopConfig = {
   cornerRadius: 12,
+  returnsLinked: true,
   frontReturn: { enabled: true, depth: 45 },
   backUpstand: { enabled: true, depth: 100 },
   backReturn: { enabled: false, depth: 45 },
@@ -113,6 +114,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
   priceBreakdown: null,
   isPriceLoading: false,
   viewMode: "3d",
+  editMode: false,
   configStep: 0,
   isConfigComplete: false,
 
@@ -188,7 +190,11 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
   },
 
   setViewMode: (mode: ViewMode) => {
-    set({ viewMode: mode });
+    set({ viewMode: mode, ...(mode !== "3d" ? { editMode: false } : {}) });
+  },
+
+  setEditMode: (mode: boolean) => {
+    set({ editMode: mode });
   },
 
   calculatePrice: async () => {
@@ -246,6 +252,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
       priceBreakdown: null,
       isPriceLoading: false,
       viewMode: "3d",
+      editMode: false,
       configStep: 0,
       isConfigComplete: false,
     });
