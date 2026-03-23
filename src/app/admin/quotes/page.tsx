@@ -245,17 +245,28 @@ export default function AdminQuotesPage() {
                     <StatusBadge status={q.status} />
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      {q.svg_workshop && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" title="SVG available" />
-                      )}
-                      {q.dxf_export && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-blue-400" title="DXF available" />
-                      )}
-                      {!q.svg_workshop && !q.dxf_export && (
-                        <span className={`text-xs ${pick("text-white/20", "text-stone-300")}`}>—</span>
-                      )}
-                    </div>
+                    {(() => {
+                      const hasSvg = q.svg_workshop || q.svg_workshop_url;
+                      const hasDxf = q.dxf_export || q.dxf_export_url;
+                      const fileCount = (hasSvg ? 2 : 0) + (hasDxf ? 1 : 0); // workshop + production SVGs, plus DXF
+                      if (fileCount === 0) {
+                        return <span className={`text-xs ${pick("text-white/20", "text-stone-300")}`}>—</span>;
+                      }
+                      return (
+                        <div className="flex items-center justify-center gap-1.5">
+                          {hasSvg && (
+                            <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-500" title="SVG exports available">
+                              SVG
+                            </span>
+                          )}
+                          {hasDxf && (
+                            <span className="inline-flex items-center gap-1 rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-blue-500" title="DXF cut file available">
+                              DXF
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                 </tr>
               ))

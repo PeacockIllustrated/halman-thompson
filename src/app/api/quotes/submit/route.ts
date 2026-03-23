@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { uploadQuoteExports } from "@/lib/supabase/storage";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -11,6 +12,8 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = getSupabaseAdmin();
+
+  // Insert the quote row first (without file URLs — we need the ID)
   const row = {
     customer_name: customerName,
     customer_email: customerEmail,
@@ -33,6 +36,7 @@ export async function POST(req: NextRequest) {
     notes: body.notes ?? null,
     worktop_config: body.worktopConfig ?? null,
     signage_config: body.signageConfig ?? null,
+    // Raw strings kept as fallback — URLs will be added after upload
     svg_workshop: body.svgWorkshop ?? null,
     svg_production: body.svgProduction ?? null,
     dxf_export: body.dxfExport ?? null,
@@ -52,5 +56,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, quoteId: (data as { id: string })?.id });
+  const quoteId = (data as { id: string })?.id;
+
+  // Upload fabrication exports to Supabase Storage (non-blocking — quote is already saved)
+  if (body.svgWorkshop || body.svgProduction || body.dxfExport) {
+    try {
+      const urls = await uploadQuoteExports(quoteId, {
+        svgWorkshop: body.svgWorkshop,
+        svgProduction: body.svgProduction,
+        dxfExport: body.dxfExport,
+      });
+
+      // Update the quote row with storage URLs and clear raw strings to save DB space
+      const urlUpdate: Record<string, unknown> = {};
+      if (urls.svgWorkshopUrl) {
+        urlUpdate.svg_workshop_url = urls.svgWorkshopUrl;
+        urlUpdate.svg_workshop = null; // clear raw string — it's in storage now
+      }
+      if (urls.svgProductionUrl) {
+        urlUpdate.svg_production_url = urls.svgProductionUrl;
+        urlUpdate.svg_production = null;
+      }
+      if (urls.dxfExportUrl) {
+        urlUpdate.dxf_export_url = urls.dxfExportUrl;
+        urlUpdate.dxf_export = null;
+      }
+
+      if (Object.keys(urlUpdate).length > 0) {
+        await supabase
+          .from("hal-tho_quotes")
+          .update(urlUpdate as never)
+          .eq("id", quoteId);
+      }
+    } catch (uploadErr) {
+      // File upload failed — raw strings are still in the DB as fallback
+      console.error("[quote-submit] File upload failed, raw strings retained:", uploadErr);
+    }
+  }
+
+  return NextResponse.json({ ok: true, quoteId });
 }

@@ -45,48 +45,148 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-// ─── SVG Preview Component ─────────────────────────────────
-function SvgPreview({ svg, label, pick }: { svg: string; label: string; pick: (d: string, l: string) => string }) {
-  const [expanded, setExpanded] = useState(false);
+// ─── File Download Card ─────────────────────────────────
+function FileCard({
+  label,
+  description,
+  url,
+  fallbackContent,
+  fileName,
+  mime,
+  icon,
+  pick,
+}: {
+  label: string;
+  description: string;
+  url: string | null;
+  fallbackContent: string | null;
+  fileName: string;
+  mime: string;
+  icon: React.ReactNode;
+  pick: (d: string, l: string) => string;
+}) {
+  const [previewing, setPreviewing] = useState(false);
 
   function handleDownload() {
-    const blob = new Blob([svg], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `HT-${label.toLowerCase().replace(/\s+/g, "-")}.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (url) {
+      // Direct download from storage
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.click();
+    } else if (fallbackContent) {
+      // Legacy: download from raw string
+      const blob = new Blob([fallbackContent], { type: mime });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    }
   }
+
+  const isAvailable = url || fallbackContent;
+  if (!isAvailable) return null;
 
   return (
     <div className={`rounded-xl border overflow-hidden ${pick("border-white/[0.06]", "border-stone-200")}`}>
-      <div className={`flex items-center justify-between px-4 py-2.5 ${pick("bg-white/[0.02]", "bg-stone-50")}`}>
-        <span className={`text-xs font-semibold uppercase tracking-wider ${pick("text-white/50", "text-stone-500")}`}>{label}</span>
+      <div className={`flex items-center gap-3 px-4 py-3.5 ${pick("bg-white/[0.02]", "bg-stone-50/80")}`}>
+        {/* File icon */}
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${pick("bg-white/[0.06]", "bg-white border border-stone-200")}`}>
+          {icon}
+        </div>
+
+        {/* Label + description */}
+        <div className="min-w-0 flex-1">
+          <p className={`text-sm font-semibold ${pick("text-white/80", "text-stone-700")}`}>{label}</p>
+          <p className={`text-[11px] ${pick("text-white/35", "text-stone-400")}`}>{description}</p>
+        </div>
+
+        {/* Actions */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${pick("text-white/50 hover:bg-white/[0.06] hover:text-white/70", "text-stone-500 hover:bg-stone-100 hover:text-stone-700")}`}
-          >
-            {expanded ? "Collapse" : "Preview"}
-          </button>
+          {/* Preview toggle for SVG files */}
+          {mime === "image/svg+xml" && (fallbackContent || url) && (
+            <button
+              onClick={() => setPreviewing(!previewing)}
+              className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${pick(
+                "text-white/50 hover:bg-white/[0.06] hover:text-white/70",
+                "text-stone-500 hover:bg-stone-100 hover:text-stone-700"
+              )}`}
+            >
+              {previewing ? "Hide" : "Preview"}
+            </button>
+          )}
+
+          {/* Download button */}
           <button
             onClick={handleDownload}
-            className="rounded-lg bg-ht-gold/10 px-2.5 py-1 text-xs font-semibold text-ht-gold transition-colors hover:bg-ht-gold/20"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-ht-gold/10 px-3 py-1.5 text-xs font-semibold text-ht-gold transition-colors hover:bg-ht-gold/20"
           >
-            Download SVG
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download
           </button>
+
+          {/* Direct link for storage files */}
+          {url && (
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`rounded-lg px-2 py-1.5 text-xs transition-colors ${pick(
+                "text-white/30 hover:bg-white/[0.04] hover:text-white/60",
+                "text-stone-300 hover:bg-stone-100 hover:text-stone-600"
+              )}`}
+              title="Open in new tab"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </a>
+          )}
         </div>
       </div>
-      {expanded && (
+
+      {/* SVG inline preview */}
+      {previewing && fallbackContent && mime === "image/svg+xml" && (
         <div className={`border-t p-4 ${pick("border-white/[0.04] bg-white/[0.02]", "border-stone-100 bg-white")}`}>
           <div
             className="mx-auto max-w-full overflow-auto [&>svg]:max-h-[500px] [&>svg]:w-full"
-            dangerouslySetInnerHTML={{ __html: svg }}
+            dangerouslySetInnerHTML={{ __html: fallbackContent }}
           />
         </div>
       )}
     </div>
+  );
+}
+
+// SVG icon components for file types
+function SvgFileIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <path d="M9 15l2 2 4-4" />
+    </svg>
+  );
+}
+
+function DxfFileIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="8" y1="13" x2="16" y2="13" />
+      <line x1="8" y1="17" x2="16" y2="17" />
+    </svg>
   );
 }
 
@@ -150,16 +250,7 @@ export default function QuoteDetailPage() {
     setSaving(false);
   }
 
-  async function handleDxfDownload() {
-    if (!quote?.dxf_export) return;
-    const blob = new Blob([quote.dxf_export], { type: "application/dxf" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `HT-${quote.finish_name}-${quote.width}x${quote.height}.dxf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  // DXF download is now handled by FileCard component
 
   if (loading) {
     return (
@@ -185,7 +276,8 @@ export default function QuoteDetailPage() {
   const fs = quote.flat_sheet as unknown as FlatSheet | null;
   const di = quote.device_info as Record<string, unknown> | null;
 
-  const hasExports = quote.svg_workshop || quote.svg_production || quote.dxf_export;
+  const hasExports = quote.svg_workshop || quote.svg_production || quote.dxf_export
+    || quote.svg_workshop_url || quote.svg_production_url || quote.dxf_export_url;
   const hasChanged = status !== quote.status || internalNotes !== (quote.internal_notes ?? "");
 
   return (
@@ -324,24 +416,40 @@ export default function QuoteDetailPage() {
             </Card>
           )}
 
-          {/* Exports */}
+          {/* Fabrication Exports */}
           {hasExports && (
             <Card title="Fabrication Exports" pick={pick}>
               <div className="space-y-3">
-                {quote.svg_workshop && <SvgPreview svg={quote.svg_workshop} label="Workshop Print (A4)" pick={pick} />}
-                {quote.svg_production && <SvgPreview svg={quote.svg_production} label="Production Print (1:1)" pick={pick} />}
-                {quote.dxf_export && (
-                  <button
-                    onClick={handleDxfDownload}
-                    className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 transition-colors ${pick(
-                      "border-white/[0.06] hover:bg-white/[0.03]",
-                      "border-stone-200 hover:bg-stone-50"
-                    )}`}
-                  >
-                    <span className={`text-sm font-medium ${pick("text-white/70", "text-stone-600")}`}>DXF Cut File</span>
-                    <span className="rounded-lg bg-ht-gold/10 px-2.5 py-1 text-xs font-semibold text-ht-gold">Download DXF</span>
-                  </button>
-                )}
+                <FileCard
+                  label="Workshop Print"
+                  description="A4 scaled drawing for workshop reference"
+                  url={quote.svg_workshop_url}
+                  fallbackContent={quote.svg_workshop}
+                  fileName={`HT-${quote.finish_name}-workshop.svg`}
+                  mime="image/svg+xml"
+                  icon={<SvgFileIcon />}
+                  pick={pick}
+                />
+                <FileCard
+                  label="Production Print"
+                  description="1:1 scale blueprint for manufacturing"
+                  url={quote.svg_production_url}
+                  fallbackContent={quote.svg_production}
+                  fileName={`HT-${quote.finish_name}-production.svg`}
+                  mime="image/svg+xml"
+                  icon={<SvgFileIcon />}
+                  pick={pick}
+                />
+                <FileCard
+                  label="DXF Cut File"
+                  description="CNC-ready cutting file with layers"
+                  url={quote.dxf_export_url}
+                  fallbackContent={quote.dxf_export}
+                  fileName={`HT-${quote.finish_name}-${quote.width}x${quote.height}.dxf`}
+                  mime="application/dxf"
+                  icon={<DxfFileIcon />}
+                  pick={pick}
+                />
               </div>
             </Card>
           )}

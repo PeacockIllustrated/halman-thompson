@@ -42,6 +42,9 @@ export interface QuoteRow {
   svg_workshop: string | null;
   svg_production: string | null;
   dxf_export: string | null;
+  svg_workshop_url: string | null;
+  svg_production_url: string | null;
+  dxf_export_url: string | null;
   configuration_snapshot: Record<string, unknown> | null;
   flat_sheet: Record<string, unknown> | null;
   panel_layout: Record<string, unknown> | null;
