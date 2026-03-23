@@ -63,6 +63,7 @@ export const PRODUCT_TYPES: ProductTypeConfig[] = [
     sortOrder: 2,
     isActive: true,
     phase: 1,
+    defaultFinishSlug: "antique-brass",
   },
   {
     id: "bar_top",

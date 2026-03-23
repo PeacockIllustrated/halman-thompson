@@ -11,6 +11,7 @@ import { CutoutShapeSelector } from "@/components/configurator/CutoutShapeSelect
 import { ExportButton } from "@/components/configurator/ExportButton";
 import { useConfiguratorStore } from "@/stores/configurator";
 import { getProductType } from "@/lib/products/catalogue";
+import { getFinishBySlug } from "@/lib/products/finishes";
 import type { ProductType } from "@/types";
 
 export default function ConfigurePage() {
@@ -21,7 +22,7 @@ export default function ConfigurePage() {
       : params.productType?.[0] ?? "";
   const productConfig = getProductType(productTypeParam);
 
-  const { setProductType, setWidth, setHeight, setThickness } =
+  const { setProductType, setWidth, setHeight, setThickness, setFinish, selectedFinish } =
     useConfiguratorStore();
 
   useEffect(() => {
@@ -31,7 +32,15 @@ export default function ConfigurePage() {
     setWidth(productConfig.defaultWidth);
     setHeight(productConfig.defaultHeight);
     setThickness(productConfig.defaultThickness);
-  }, [productConfig, setProductType, setWidth, setHeight, setThickness]);
+
+    // Auto-select default finish if configured and no finish is already selected
+    if (productConfig.defaultFinishSlug && !selectedFinish) {
+      const defaultFinish = getFinishBySlug(productConfig.defaultFinishSlug);
+      if (defaultFinish) {
+        setFinish(defaultFinish);
+      }
+    }
+  }, [productConfig, setProductType, setWidth, setHeight, setThickness, setFinish, selectedFinish]);
 
   if (!productConfig || !productConfig.isActive) {
     notFound();
