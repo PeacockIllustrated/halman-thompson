@@ -66,6 +66,39 @@ function FileCard({
   pick: (d: string, l: string) => string;
 }) {
   const [previewing, setPreviewing] = useState(false);
+  const [fetchedSvg, setFetchedSvg] = useState<string | null>(null);
+  const [fetchingPreview, setFetchingPreview] = useState(false);
+
+  // The SVG content to render in preview — either from DB fallback or fetched from URL
+  const svgContent = fallbackContent || fetchedSvg;
+
+  async function handlePreviewToggle() {
+    if (previewing) {
+      setPreviewing(false);
+      return;
+    }
+    // If we have content already, just show it
+    if (fallbackContent || fetchedSvg) {
+      setPreviewing(true);
+      return;
+    }
+    // Otherwise fetch from storage URL
+    if (url && mime === "image/svg+xml") {
+      setFetchingPreview(true);
+      try {
+        const res = await fetch(url);
+        if (res.ok) {
+          const text = await res.text();
+          setFetchedSvg(text);
+          setPreviewing(true);
+        }
+      } catch {
+        // Silently fail — preview just won't show
+      } finally {
+        setFetchingPreview(false);
+      }
+    }
+  }
 
   function handleDownload() {
     if (url) {
@@ -93,33 +126,20 @@ function FileCard({
 
   return (
     <div className={`rounded-xl border overflow-hidden ${pick("border-white/[0.06]", "border-stone-200")}`}>
-      <div className={`flex items-center gap-3 px-4 py-3.5 ${pick("bg-white/[0.02]", "bg-stone-50/80")}`}>
-        {/* File icon */}
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${pick("bg-white/[0.06]", "bg-white border border-stone-200")}`}>
-          {icon}
+      <div className={`px-3 py-3 sm:px-4 sm:py-3.5 ${pick("bg-white/[0.02]", "bg-stone-50/80")}`}>
+        {/* Top row: icon + label */}
+        <div className="flex items-center gap-3">
+          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 ${pick("bg-white/[0.06]", "bg-white border border-stone-200")}`}>
+            {icon}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className={`text-sm font-semibold ${pick("text-white/80", "text-stone-700")}`}>{label}</p>
+            <p className={`hidden text-[11px] sm:block ${pick("text-white/35", "text-stone-400")}`}>{description}</p>
+          </div>
         </div>
 
-        {/* Label + description */}
-        <div className="min-w-0 flex-1">
-          <p className={`text-sm font-semibold ${pick("text-white/80", "text-stone-700")}`}>{label}</p>
-          <p className={`text-[11px] ${pick("text-white/35", "text-stone-400")}`}>{description}</p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          {/* Preview toggle for SVG files */}
-          {mime === "image/svg+xml" && (fallbackContent || url) && (
-            <button
-              onClick={() => setPreviewing(!previewing)}
-              className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${pick(
-                "text-white/50 hover:bg-white/[0.06] hover:text-white/70",
-                "text-stone-500 hover:bg-stone-100 hover:text-stone-700"
-              )}`}
-            >
-              {previewing ? "Hide" : "Preview"}
-            </button>
-          )}
-
+        {/* Actions — stacked below on mobile, inline on desktop */}
+        <div className="mt-2.5 flex flex-wrap items-center gap-2 sm:mt-2">
           {/* Download button */}
           <button
             onClick={handleDownload}
@@ -133,13 +153,27 @@ function FileCard({
             Download
           </button>
 
+          {/* Preview toggle for SVG files */}
+          {mime === "image/svg+xml" && (fallbackContent || url) && (
+            <button
+              onClick={handlePreviewToggle}
+              disabled={fetchingPreview}
+              className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${pick(
+                "text-white/50 hover:bg-white/[0.06] hover:text-white/70",
+                "text-stone-500 hover:bg-stone-100 hover:text-stone-700"
+              )}`}
+            >
+              {fetchingPreview ? "Loading..." : previewing ? "Hide Preview" : "Preview"}
+            </button>
+          )}
+
           {/* Direct link for storage files */}
           {url && (
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`rounded-lg px-2 py-1.5 text-xs transition-colors ${pick(
+              className={`inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs transition-colors ${pick(
                 "text-white/30 hover:bg-white/[0.04] hover:text-white/60",
                 "text-stone-300 hover:bg-stone-100 hover:text-stone-600"
               )}`}
@@ -150,17 +184,18 @@ function FileCard({
                 <polyline points="15 3 21 3 21 9" />
                 <line x1="10" y1="14" x2="21" y2="3" />
               </svg>
+              <span className="sm:hidden">Open</span>
             </a>
           )}
         </div>
       </div>
 
       {/* SVG inline preview */}
-      {previewing && fallbackContent && mime === "image/svg+xml" && (
-        <div className={`border-t p-4 ${pick("border-white/[0.04] bg-white/[0.02]", "border-stone-100 bg-white")}`}>
+      {previewing && svgContent && mime === "image/svg+xml" && (
+        <div className={`border-t p-3 sm:p-4 ${pick("border-white/[0.04] bg-white/[0.02]", "border-stone-100 bg-white")}`}>
           <div
             className="mx-auto max-w-full overflow-auto [&>svg]:max-h-[500px] [&>svg]:w-full"
-            dangerouslySetInnerHTML={{ __html: fallbackContent }}
+            dangerouslySetInnerHTML={{ __html: svgContent }}
           />
         </div>
       )}
@@ -281,7 +316,7 @@ export default function QuoteDetailPage() {
   const hasChanged = status !== quote.status || internalNotes !== (quote.internal_notes ?? "");
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
