@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import type { FinishConfigRow } from "@/lib/supabase/database.types";
 import { FINISHES } from "@/lib/products/finishes";
+import { useAdminTheme } from "../theme";
 
 export default function AdminFinishesPage() {
+  const { pick } = useAdminTheme();
   const [finishes, setFinishes] = useState<FinishConfigRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export default function AdminFinishesPage() {
     setSaving(null);
   };
 
-  if (loading) return <p className="text-white/30">Loading...</p>;
+  if (loading) return <p className={pick("text-white/30", "text-stone-400")}>Loading...</p>;
 
   // Group by metal type using the local FINISHES registry for metadata
   const metals = ["copper", "brass", "zinc", "steel", "corten"] as const;
@@ -45,10 +47,10 @@ export default function AdminFinishesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-wide text-white">
+        <h1 className={`font-serif text-2xl font-bold tracking-wide ${pick("text-white", "text-stone-900")}`}>
           Finish Configuration
         </h1>
-        <p className="mt-1 text-sm text-white/40">
+        <p className={`mt-1 text-sm ${pick("text-white/40", "text-stone-500")}`}>
           Adjust price multipliers and toggle availability for each finish.
         </p>
       </div>
@@ -62,13 +64,16 @@ export default function AdminFinishesPage() {
 
         return (
           <div key={metal} className="space-y-2">
-            <h2 className="font-serif text-lg font-semibold capitalize text-white/70">
+            <h2 className={`font-serif text-lg font-semibold capitalize ${pick("text-white/70", "text-stone-700")}`}>
               {metal}
             </h2>
-            <div className="overflow-hidden rounded-xl border border-white/[0.06]">
+            <div className={`overflow-hidden rounded-xl border ${pick("border-white/[0.06]", "border-stone-200 shadow-sm")}`}>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/[0.06] text-xs uppercase tracking-wider text-white/30">
+                  <tr className={`border-b text-xs uppercase tracking-wider ${pick(
+                    "border-white/[0.06] text-white/30",
+                    "border-stone-200 text-stone-400 bg-stone-50"
+                  )}`}>
                     <th className="px-4 py-2 text-left">Finish</th>
                     <th className="px-4 py-2 text-left">Price Modifier</th>
                     <th className="px-4 py-2 text-center">Active</th>
@@ -81,9 +86,12 @@ export default function AdminFinishesPage() {
                     return (
                       <tr
                         key={f.id}
-                        className="border-b border-white/[0.03] transition-colors hover:bg-white/[0.03]"
+                        className={`border-b transition-colors ${pick(
+                          "border-white/[0.03] hover:bg-white/[0.03]",
+                          "border-stone-100 hover:bg-stone-50"
+                        )}`}
                       >
-                        <td className="px-4 py-2.5 font-medium text-white">
+                        <td className={`px-4 py-2.5 font-medium ${pick("text-white", "text-stone-900")}`}>
                           {local?.name ?? f.finish_id}
                         </td>
                         <td className="px-4 py-2.5">
@@ -94,15 +102,18 @@ export default function AdminFinishesPage() {
                             onChange={(e) =>
                               update(f.id, "price_modifier", Number(e.target.value))
                             }
-                            className="w-20 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-sm tabular-nums text-white outline-none focus:border-ht-gold/40"
+                            className={`w-20 rounded-lg border px-2 py-1 text-sm tabular-nums outline-none ${pick(
+                              "border-white/10 bg-white/[0.04] text-white focus:border-ht-gold/40",
+                              "border-stone-300 bg-stone-50 text-stone-900 focus:border-ht-gold/60"
+                            )}`}
                           />
-                          <span className="ml-1 text-xs text-white/30">×</span>
+                          <span className={`ml-1 text-xs ${pick("text-white/30", "text-stone-400")}`}>×</span>
                         </td>
                         <td className="px-4 py-2.5 text-center">
                           <button
                             onClick={() => update(f.id, "is_active", !f.is_active)}
                             className={`h-5 w-9 rounded-full transition-colors ${
-                              f.is_active ? "bg-ht-gold" : "bg-white/15"
+                              f.is_active ? "bg-ht-gold" : pick("bg-white/15", "bg-stone-300")
                             }`}
                           >
                             <span

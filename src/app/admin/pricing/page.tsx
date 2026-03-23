@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { PricingConfigRow } from "@/lib/supabase/database.types";
+import { useAdminTheme } from "../theme";
 
 const LABELS: Record<string, string> = {
   base_price_per_m2: "Base Metal Cost (£/m²)",
@@ -16,6 +17,7 @@ const LABELS: Record<string, string> = {
 };
 
 export default function AdminPricingPage() {
+  const { pick } = useAdminTheme();
   const [configs, setConfigs] = useState<PricingConfigRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -52,16 +54,16 @@ export default function AdminPricingPage() {
   };
 
   if (loading) {
-    return <p className="text-white/30">Loading pricing config...</p>;
+    return <p className={pick("text-white/30", "text-stone-400")}>Loading pricing config...</p>;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-wide text-white">
+        <h1 className={`font-serif text-2xl font-bold tracking-wide ${pick("text-white", "text-stone-900")}`}>
           Pricing Configuration
         </h1>
-        <p className="mt-1 text-sm text-white/40">
+        <p className={`mt-1 text-sm ${pick("text-white/40", "text-stone-500")}`}>
           Adjust material costs, surcharges, and rates. Changes take effect on new quotes.
         </p>
       </div>
@@ -72,15 +74,18 @@ export default function AdminPricingPage() {
           return (
             <div
               key={c.key}
-              className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-5"
+              className={`rounded-xl border p-5 ${pick(
+                "border-white/[0.06] bg-white/[0.03]",
+                "border-stone-200 bg-white shadow-sm"
+              )}`}
             >
               <div className="mb-3 flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-white">
+                  <h3 className={`text-sm font-semibold ${pick("text-white", "text-stone-900")}`}>
                     {LABELS[c.key] ?? c.key}
                   </h3>
                   {c.description && (
-                    <p className="text-xs text-white/30">{c.description}</p>
+                    <p className={`text-xs ${pick("text-white/30", "text-stone-400")}`}>{c.description}</p>
                   )}
                 </div>
                 <button
@@ -97,7 +102,7 @@ export default function AdminPricingPage() {
                   {Object.entries(c.value as Record<string, number>).map(
                     ([k, v]) => (
                       <div key={k} className="flex items-center gap-2">
-                        <span className="min-w-[100px] text-xs capitalize text-white/40">
+                        <span className={`min-w-[100px] text-xs capitalize ${pick("text-white/40", "text-stone-500")}`}>
                           {k.replace(/_/g, " ")}
                         </span>
                         <input
@@ -111,7 +116,10 @@ export default function AdminPricingPage() {
                               [c.key]: JSON.stringify(obj, null, 2),
                             }));
                           }}
-                          className="w-24 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm tabular-nums text-white outline-none focus:border-ht-gold/40"
+                          className={`w-24 rounded-lg border px-3 py-1.5 text-sm tabular-nums outline-none ${pick(
+                            "border-white/10 bg-white/[0.04] text-white focus:border-ht-gold/40",
+                            "border-stone-300 bg-stone-50 text-stone-900 focus:border-ht-gold/60"
+                          )}`}
                         />
                       </div>
                     )
@@ -124,11 +132,14 @@ export default function AdminPricingPage() {
                   onChange={(e) =>
                     setEdits((p) => ({ ...p, [c.key]: e.target.value }))
                   }
-                  className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none focus:border-ht-gold/40"
+                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${pick(
+                    "border-white/10 bg-white/[0.04] text-white focus:border-ht-gold/40",
+                    "border-stone-300 bg-stone-50 text-stone-900 focus:border-ht-gold/60"
+                  )}`}
                 />
               )}
 
-              <p className="mt-2 text-[10px] text-white/20">
+              <p className={`mt-2 text-[10px] ${pick("text-white/20", "text-stone-400")}`}>
                 Last updated: {new Date(c.updated_at).toLocaleDateString("en-GB")}
               </p>
             </div>

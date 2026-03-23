@@ -74,7 +74,7 @@ export default function HomePage() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Link
-                href="/configure/splashback"
+                href="/configure/worktop"
                 className="rounded-xl bg-ht-gold px-8 py-3.5 font-semibold text-white shadow-lg shadow-ht-gold/25 transition-all hover:bg-ht-gold/90 hover:shadow-xl hover:shadow-ht-gold/30"
               >
                 Start Configuring

@@ -25,14 +25,17 @@ export function QuoteForm() {
     priceBreakdown,
   } = useConfiguratorStore();
 
+  const [error, setError] = useState("");
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setIsSubmitting(true);
+    setError("");
 
     const quoteData = {
       customerName: name,
       customerEmail: email,
-      customerPhone: phone,
+      customerPhone: phone || undefined,
       productType,
       finishId: selectedFinish?.id,
       finishName: selectedFinish?.name,
@@ -43,16 +46,27 @@ export function QuoteForm() {
       panelCount,
       calculatedPrice,
       priceBreakdown,
-      notes,
-      submittedAt: new Date().toISOString(),
+      notes: notes || undefined,
     };
 
-    console.log("Quote request submitted:", quoteData);
+    try {
+      const res = await fetch("/api/quotes/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(quoteData),
+      });
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to submit quote");
+      }
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (isSubmitted) {
@@ -112,6 +126,12 @@ export function QuoteForm() {
           className="w-full rounded-md border border-ht-dark/20 bg-white px-3 py-2 text-sm text-ht-dark placeholder:text-ht-dark/40 focus:border-ht-gold focus:outline-none focus:ring-1 focus:ring-ht-gold/50"
         />
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? "Sending..." : "Submit Quote Request"}

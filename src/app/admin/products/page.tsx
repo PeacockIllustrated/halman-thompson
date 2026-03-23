@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import type { ProductConfigRow } from "@/lib/supabase/database.types";
+import { useAdminTheme } from "../theme";
 
 export default function AdminProductsPage() {
+  const { pick } = useAdminTheme();
   const [products, setProducts] = useState<ProductConfigRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -32,15 +34,15 @@ export default function AdminProductsPage() {
     setSaving(null);
   };
 
-  if (loading) return <p className="text-white/30">Loading...</p>;
+  if (loading) return <p className={pick("text-white/30", "text-stone-400")}>Loading...</p>;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-wide text-white">
+        <h1 className={`font-serif text-2xl font-bold tracking-wide ${pick("text-white", "text-stone-900")}`}>
           Product Configuration
         </h1>
-        <p className="mt-1 text-sm text-white/40">
+        <p className={`mt-1 text-sm ${pick("text-white/40", "text-stone-500")}`}>
           Dimension limits, labour multipliers, and active status per product type.
         </p>
       </div>
@@ -49,11 +51,14 @@ export default function AdminProductsPage() {
         {products.map((p) => (
           <div
             key={p.id}
-            className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-5"
+            className={`rounded-xl border p-5 ${pick(
+              "border-white/[0.06] bg-white/[0.03]",
+              "border-stone-200 bg-white shadow-sm"
+            )}`}
           >
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h3 className="font-serif text-lg font-semibold capitalize text-white">
+                <h3 className={`font-serif text-lg font-semibold capitalize ${pick("text-white", "text-stone-900")}`}>
                   {p.product_type.replace(/_/g, " ")}
                 </h3>
                 <button
@@ -61,7 +66,7 @@ export default function AdminProductsPage() {
                   className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-all ${
                     p.is_active
                       ? "bg-emerald-500/15 text-emerald-400"
-                      : "bg-white/10 text-white/40"
+                      : pick("bg-white/10 text-white/40", "bg-stone-100 text-stone-400")
                   }`}
                 >
                   {p.is_active ? "Active" : "Inactive"}
@@ -88,7 +93,7 @@ export default function AdminProductsPage() {
                 ["starting_price", "Starting Price (£)"],
               ] as const).map(([field, label]) => (
                 <div key={field}>
-                  <label className="text-[11px] text-white/40">{label}</label>
+                  <label className={`text-[11px] ${pick("text-white/40", "text-stone-500")}`}>{label}</label>
                   <input
                     type="number"
                     step={field === "labour_multiplier" ? 0.1 : 1}
@@ -96,7 +101,10 @@ export default function AdminProductsPage() {
                     onChange={(e) =>
                       updateField(p.id, field, Number(e.target.value))
                     }
-                    className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm tabular-nums text-white outline-none focus:border-ht-gold/40"
+                    className={`mt-1 w-full rounded-lg border px-3 py-1.5 text-sm tabular-nums outline-none ${pick(
+                      "border-white/10 bg-white/[0.04] text-white focus:border-ht-gold/40",
+                      "border-stone-300 bg-stone-50 text-stone-900 focus:border-ht-gold/60"
+                    )}`}
                   />
                 </div>
               ))}
