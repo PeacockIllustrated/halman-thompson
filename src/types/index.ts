@@ -187,6 +187,8 @@ export interface ProductTypeConfig {
   sortOrder: number;
   isActive: boolean;
   phase: 1 | 2 | 3 | 4;
+  /** Optional default finish slug to pre-select when this product type loads */
+  defaultFinishSlug?: string;
 }
 
 // ─── Dimensions ─────────────────────────────────────────────────
