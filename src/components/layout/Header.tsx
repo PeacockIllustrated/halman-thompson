@@ -49,6 +49,12 @@ export function Header() {
             Products
           </Link>
           <Link
+            href="/admin"
+            className="hidden transition-colors hover:text-ht-gold sm:inline"
+          >
+            Admin
+          </Link>
+          <Link
             href="/configure/splashback"
             className="rounded-lg bg-ht-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:bg-ht-gold/90 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm"
           >
