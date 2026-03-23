@@ -25,6 +25,7 @@ export interface QuoteRow {
   product_type: string;
   finish_id: string;
   finish_name: string;
+  base_metal: string | null;
   width: number;
   height: number;
   thickness: number;
@@ -38,6 +39,24 @@ export interface QuoteRow {
   notes: string | null;
   internal_notes: string | null;
   worktop_config: Record<string, unknown> | null;
+  svg_workshop: string | null;
+  svg_production: string | null;
+  dxf_export: string | null;
+  configuration_snapshot: Record<string, unknown> | null;
+  flat_sheet: Record<string, unknown> | null;
+  panel_layout: Record<string, unknown> | null;
+  device_info: Record<string, unknown> | null;
+  signage_config: Record<string, unknown> | null;
+}
+
+export interface QuoteEventRow {
+  id: string;
+  quote_id: string;
+  event_type: string;
+  old_value: string | null;
+  new_value: string | null;
+  actor: string;
+  created_at: string;
 }
 
 export interface PricingConfigRow {
@@ -107,6 +126,14 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Omit<FinishConfigRow, "id">>;
+      };
+      "hal-tho_quote_events": {
+        Row: QuoteEventRow;
+        Insert: Omit<QuoteEventRow, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<Omit<QuoteEventRow, "id" | "created_at">>;
       };
     };
     Views: Record<string, never>;

@@ -130,28 +130,26 @@ export function WorktopOptions() {
           unit="mm"
         />
         {/* ── Returns (linked / unlinked) ── */}
-        <div className="space-y-2 rounded-xl border border-ht-dark/[0.06] p-3.5">
+        <div className="rounded-xl border border-ht-dark/[0.06] bg-white/60 p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-ht-dark">Returns</span>
+            <span className="text-sm font-semibold text-ht-dark">Returns</span>
             <button
               type="button"
               onClick={() => update({ returnsLinked: !config.returnsLinked })}
               title={config.returnsLinked ? "Unlink returns (set individual depths)" : "Link returns (shared depth)"}
-              className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium transition-all duration-200 ${
+              className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200 ${
                 config.returnsLinked
                   ? "bg-ht-gold/10 text-ht-gold ring-1 ring-ht-gold/20"
                   : "bg-ht-dark/5 text-ht-dark/40 ring-1 ring-ht-dark/10"
               }`}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 {config.returnsLinked ? (
-                  /* link icon */
                   <>
                     <path d="M7 9a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L8 3" />
                     <path d="M9 7a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5l1-1" />
                   </>
                 ) : (
-                  /* unlink icon */
                   <>
                     <path d="M7 9a3.5 3.5 0 0 0 4.3.5L13 8a3.5 3.5 0 0 0-4.3-5.5" />
                     <path d="M9 7a3.5 3.5 0 0 0-4.3-.5L3 8a3.5 3.5 0 0 0 4.3 5.5" />
@@ -159,23 +157,30 @@ export function WorktopOptions() {
                   </>
                 )}
               </svg>
-              {config.returnsLinked ? "Linked" : "Unlinked"}
+              {config.returnsLinked ? "Linked" : "Individual"}
             </button>
           </div>
 
           {config.returnsLinked ? (
-            /* Linked — one toggle per edge, shared depth slider */
-            <div className="space-y-2 pt-1">
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <div className="mt-3 space-y-3">
+              {/* Edge toggle chips */}
+              <div className="flex gap-2">
                 {(["frontReturn", "leftReturn", "rightReturn"] as const).map((key) => {
                   const labels = { frontReturn: "Front", leftReturn: "Left", rightReturn: "Right" };
+                  const enabled = config[key].enabled;
                   return (
-                    <Toggle
+                    <button
                       key={key}
-                      label={labels[key]}
-                      checked={config[key].enabled}
-                      onChange={(v) => update({ [key]: { ...config[key], enabled: v } })}
-                    />
+                      type="button"
+                      onClick={() => update({ [key]: { ...config[key], enabled: !enabled } })}
+                      className={`flex-1 rounded-lg py-2 text-xs font-medium transition-all duration-200 ${
+                        enabled
+                          ? "bg-ht-gold/10 text-ht-gold ring-1 ring-ht-gold/25 shadow-sm"
+                          : "bg-ht-dark/[0.04] text-ht-dark/35 ring-1 ring-ht-dark/[0.06] hover:bg-ht-dark/[0.06]"
+                      }`}
+                    >
+                      {labels[key]}
+                    </button>
                   );
                 })}
               </div>
@@ -198,8 +203,7 @@ export function WorktopOptions() {
               )}
             </div>
           ) : (
-            /* Unlinked — individual controls */
-            <div className="space-y-2 pt-1">
+            <div className="mt-3 space-y-2">
               <EdgeControl
                 label="Front Return"
                 config={config.frontReturn}

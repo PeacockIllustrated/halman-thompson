@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
     product_type: productType,
     finish_id: finishId,
     finish_name: finishName ?? finishId,
+    base_metal: body.baseMetal ?? null,
     width: Number(width),
     height: Number(height),
     thickness: Number(thickness ?? 0.9),
@@ -31,6 +32,14 @@ export async function POST(req: NextRequest) {
     configuration_url: body.configurationUrl ?? null,
     notes: body.notes ?? null,
     worktop_config: body.worktopConfig ?? null,
+    signage_config: body.signageConfig ?? null,
+    svg_workshop: body.svgWorkshop ?? null,
+    svg_production: body.svgProduction ?? null,
+    dxf_export: body.dxfExport ?? null,
+    configuration_snapshot: body.configurationSnapshot ?? null,
+    flat_sheet: body.flatSheet ?? null,
+    panel_layout: body.panelLayout ?? null,
+    device_info: body.deviceInfo ?? null,
   };
 
   const { data, error } = await supabase

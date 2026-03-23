@@ -117,6 +117,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
   editMode: false,
   configStep: 0,
   isConfigComplete: false,
+  isTextureLoading: false,
 
   // ─── Actions ────────────────────────────────────────
 
@@ -197,6 +198,10 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
     set({ editMode: mode });
   },
 
+  setTextureLoading: (loading: boolean) => {
+    set({ isTextureLoading: loading });
+  },
+
   calculatePrice: async () => {
     const state = get();
     if (!state.selectedFinish) return;
@@ -255,6 +260,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
       editMode: false,
       configStep: 0,
       isConfigComplete: false,
+      isTextureLoading: false,
     });
   },
 

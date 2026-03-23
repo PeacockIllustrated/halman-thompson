@@ -187,9 +187,12 @@ function generatePBRMaps(
 
 function TexturedMetal({ finish, doubleSide }: { finish: Finish; doubleSide?: boolean }) {
   const [maps, setMaps] = useState<PBRMaps | null>(null);
+  const setTextureLoading = useConfiguratorStore((s) => s.setTextureLoading);
 
   useEffect(() => {
     let cancelled = false;
+    setMaps(null);
+    setTextureLoading(true);
     const loader = new THREE.TextureLoader();
 
     loader.load(finish.textures.albedo, (albedo) => {
@@ -220,12 +223,13 @@ function TexturedMetal({ finish, doubleSide }: { finish: Finish; doubleSide?: bo
       derived.metalness.repeat.set(repeat, repeat);
 
       setMaps({ albedo, ...derived });
+      setTextureLoading(false);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [finish.textures.albedo]);
+  }, [finish.textures.albedo, setTextureLoading]);
 
   const material = useMemo(() => {
     if (!maps) return null;

@@ -4,26 +4,38 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useConfiguratorStore } from "@/stores/configurator";
+import { generateSvg } from "@/lib/worktop/exportSvg";
+import { generateDxf } from "@/lib/worktop/exportDxf";
 
 export function QuoteForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [isTrade, setIsTrade] = useState(false);
+  const [companyName, setCompanyName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const store = useConfiguratorStore();
   const {
     productType,
     selectedFinish,
+    baseMetal,
     width,
     height,
     thickness,
     mountingType,
+    lacquerType,
     panelCount,
+    panelLayout,
     calculatedPrice,
     priceBreakdown,
-  } = useConfiguratorStore();
+    worktopConfig,
+    signageConfig,
+    getSnapshot,
+    getFlatSheet,
+  } = store;
 
   const [error, setError] = useState("");
 
@@ -32,21 +44,78 @@ export function QuoteForm() {
     setIsSubmitting(true);
     setError("");
 
+    // Generate SVG/DXF exports for worktops
+    let svgWorkshop: string | undefined;
+    let svgProduction: string | undefined;
+    let dxfExport: string | undefined;
+    let flatSheetData: ReturnType<typeof getFlatSheet> = null;
+
+    if (productType === "worktop") {
+      flatSheetData = getFlatSheet();
+      if (flatSheetData) {
+        const svgOpts = {
+          flatSheet: flatSheetData,
+          config: worktopConfig,
+          finishName: selectedFinish?.name ?? "Custom",
+          width,
+          depth: height,
+          thickness,
+          productName: "Worktop",
+        };
+        try {
+          svgWorkshop = generateSvg({ ...svgOpts, mode: "workshop" });
+          svgProduction = generateSvg({ ...svgOpts, mode: "production" });
+        } catch { /* non-critical */ }
+        try {
+          dxfExport = generateDxf(flatSheetData, selectedFinish?.name ?? "Custom");
+        } catch { /* non-critical */ }
+      }
+    }
+
+    // Build configuration URL from snapshot
+    const snapshot = getSnapshot();
+    const configUrl = `${window.location.origin}/configure/${productType}?cfg=${encodeURIComponent(JSON.stringify(snapshot))}`;
+
+    // Device info
+    const deviceInfo = {
+      userAgent: navigator.userAgent,
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      pixelRatio: window.devicePixelRatio,
+      language: navigator.language,
+    };
+
     const quoteData = {
       customerName: name,
       customerEmail: email,
       customerPhone: phone || undefined,
+      isTrade,
+      companyName: isTrade ? companyName || undefined : undefined,
       productType,
       finishId: selectedFinish?.id,
       finishName: selectedFinish?.name,
+      baseMetal,
       width,
       height,
       thickness,
       mountingType,
+      lacquerType,
       panelCount,
       calculatedPrice,
       priceBreakdown,
       notes: notes || undefined,
+      worktopConfig: productType === "worktop" ? worktopConfig : undefined,
+      signageConfig: signageConfig || undefined,
+      configurationUrl: configUrl,
+      configurationSnapshot: snapshot,
+      flatSheet: flatSheetData || undefined,
+      panelLayout: panelLayout || undefined,
+      svgWorkshop: svgWorkshop || undefined,
+      svgProduction: svgProduction || undefined,
+      dxfExport: dxfExport || undefined,
+      deviceInfo,
     };
 
     try {
@@ -115,6 +184,27 @@ export function QuoteForm() {
         onChange={(e) => setPhone(e.target.value)}
         placeholder="e.g. 07700 900123"
       />
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setIsTrade(!isTrade)}
+          className={`relative h-5 w-9 rounded-full transition-colors ${isTrade ? "bg-ht-gold" : "bg-ht-dark/20"}`}
+        >
+          <span className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform shadow-sm ${isTrade ? "translate-x-4" : ""}`} />
+        </button>
+        <label className="text-sm font-medium text-ht-dark">Trade customer</label>
+      </div>
+
+      {isTrade && (
+        <Input
+          label="Company Name"
+          type="text"
+          value={companyName}
+          onChange={(e) => setCompanyName(e.target.value)}
+          placeholder="e.g. Smith Kitchens Ltd"
+        />
+      )}
 
       <div className="space-y-1">
         <label className="text-sm font-medium text-ht-dark">Notes (optional)</label>

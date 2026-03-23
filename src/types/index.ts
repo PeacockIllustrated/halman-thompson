@@ -358,6 +358,7 @@ export interface ConfiguratorState {
   editMode: boolean;
   configStep: number;
   isConfigComplete: boolean;
+  isTextureLoading: boolean;
 
   // Actions
   setProductType: (type: ProductType) => void;
@@ -371,6 +372,7 @@ export interface ConfiguratorState {
   setWorktopConfig: (config: WorktopConfig) => void;
   setViewMode: (mode: ViewMode) => void;
   setEditMode: (mode: boolean) => void;
+  setTextureLoading: (loading: boolean) => void;
   calculatePrice: () => Promise<void>;
   resetConfig: () => void;
   getSnapshot: () => ConfigSnapshot;
