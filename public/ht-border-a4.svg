@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595 842" width="595" height="842">
+  <!-- A4 aspect ratio: 210mm × 297mm = 595 × 842 pt -->
+
+  <defs>
+    <!-- Gold gradient for accent lines -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8a6508"/>
+      <stop offset="30%" stop-color="#b8860b"/>
+      <stop offset="50%" stop-color="#d4a830"/>
+      <stop offset="70%" stop-color="#b8860b"/>
+      <stop offset="100%" stop-color="#8a6508"/>
+    </linearGradient>
+
+    <!-- Copper gradient for decorative elements -->
+    <linearGradient id="copperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a0622a"/>
+      <stop offset="50%" stop-color="#b87333"/>
+      <stop offset="100%" stop-color="#c9885a"/>
+    </linearGradient>
+
+    <!-- Subtle texture pattern for background -->
+    <pattern id="metalTexture" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#faf7f2"/>
+      <rect x="0" y="0" width="1" height="1" fill="#f5f0e8" opacity="0.3"/>
+      <rect x="2" y="2" width="1" height="1" fill="#f5f0e8" opacity="0.3"/>
+    </pattern>
+
+    <!-- Corner ornament symbol -->
+    <symbol id="cornerOrnament" viewBox="0 0 40 40">
+      <path d="M0,0 L40,0 L40,4 L4,4 L4,40 L0,40 Z" fill="url(#goldGrad)"/>
+      <path d="M8,8 L40,8 L40,10 L10,10 L10,40 L8,40 Z" fill="#b8860b" opacity="0.4"/>
+      <circle cx="5" cy="5" r="2.5" fill="#b8860b"/>
+    </symbol>
+
+    <!-- HT Monogram -->
+    <symbol id="htMonogram" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="29" fill="none" stroke="url(#goldGrad)" stroke-width="1.5"/>
+      <circle cx="30" cy="30" r="25" fill="none" stroke="#b8860b" stroke-width="0.5" opacity="0.4"/>
+      <text x="30" y="37" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-weight="bold" fill="#1a1a2e" text-anchor="middle" letter-spacing="2">HT</text>
+    </symbol>
+
+    <!-- Decorative divider -->
+    <symbol id="divider" viewBox="0 0 200 10">
+      <line x1="0" y1="5" x2="80" y2="5" stroke="url(#goldGrad)" stroke-width="0.75"/>
+      <circle cx="88" cy="5" r="2" fill="#b8860b"/>
+      <circle cx="100" cy="5" r="3" fill="url(#copperGrad)"/>
+      <circle cx="112" cy="5" r="2" fill="#b8860b"/>
+      <line x1="120" y1="5" x2="200" y2="5" stroke="url(#goldGrad)" stroke-width="0.75"/>
+    </symbol>
+  </defs>
+
+  <!-- Background fill -->
+  <rect width="595" height="842" fill="url(#metalTexture)"/>
+
+  <!-- ============================================ -->
+  <!-- OUTER BORDER — Double-line frame             -->
+  <!-- ============================================ -->
+
+  <!-- Outer border line -->
+  <rect x="14" y="14" width="567" height="814" rx="1" ry="1"
+        fill="none" stroke="#1a1a2e" stroke-width="2"/>
+
+  <!-- Inner border line -->
+  <rect x="20" y="20" width="555" height="802" rx="0.5" ry="0.5"
+        fill="none" stroke="#1a1a2e" stroke-width="0.75"/>
+
+  <!-- Gold accent line between borders -->
+  <rect x="17" y="17" width="561" height="808" rx="0.75" ry="0.75"
+        fill="none" stroke="url(#goldGrad)" stroke-width="0.5"/>
+
+  <!-- ============================================ -->
+  <!-- CORNER ORNAMENTS                             -->
+  <!-- ============================================ -->
+
+  <!-- Top-left -->
+  <use href="#cornerOrnament" x="14" y="14" width="40" height="40"/>
+
+  <!-- Top-right (mirrored) -->
+  <g transform="translate(581,14) scale(-1,1)">
+    <use href="#cornerOrnament" x="0" y="0" width="40" height="40"/>
+  </g>
+
+  <!-- Bottom-left (mirrored) -->
+  <g transform="translate(14,828) scale(1,-1)">
+    <use href="#cornerOrnament" x="0" y="0" width="40" height="40"/>
+  </g>
+
+  <!-- Bottom-right (mirrored) -->
+  <g transform="translate(581,828) scale(-1,-1)">
+    <use href="#cornerOrnament" x="0" y="0" width="40" height="40"/>
+  </g>
+
+  <!-- ============================================ -->
+  <!-- HEADER AREA                                  -->
+  <!-- ============================================ -->
+
+  <!-- Header background band -->
+  <rect x="20" y="20" width="555" height="72" fill="#1a1a2e" rx="0.5" ry="0.5"/>
+
+  <!-- Gold accent line under header -->
+  <line x1="20" y1="92" x2="575" y2="92" stroke="url(#goldGrad)" stroke-width="1.5"/>
+  <line x1="20" y1="94.5" x2="575" y2="94.5" stroke="#b8860b" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- HT Monogram in header -->
+  <circle cx="68" cy="56" r="22" fill="#faf7f2" opacity="0.08"/>
+  <circle cx="68" cy="56" r="20" fill="none" stroke="#b8860b" stroke-width="1"/>
+  <circle cx="68" cy="56" r="17" fill="none" stroke="#b8860b" stroke-width="0.4" opacity="0.5"/>
+  <text x="68" y="63" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="bold" fill="#b8860b" text-anchor="middle" letter-spacing="2">HT</text>
+
+  <!-- Company name -->
+  <text x="104" y="50" font-family="Georgia, 'Times New Roman', serif" font-size="20" fill="#faf7f2" letter-spacing="4" font-weight="normal">
+    HALMAN THOMPSON
+  </text>
+
+  <!-- Tagline -->
+  <text x="104" y="68" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="8.5" fill="#b8860b" letter-spacing="3" font-weight="300">
+    BESPOKE METAL CREATIONS
+  </text>
+
+  <!-- Small decorative diamond on right side of header -->
+  <g transform="translate(540, 56)">
+    <rect x="-5" y="-5" width="10" height="10" fill="none" stroke="#b8860b" stroke-width="0.75" transform="rotate(45)"/>
+    <rect x="-2.5" y="-2.5" width="5" height="5" fill="#b8860b" opacity="0.3" transform="rotate(45)"/>
+  </g>
+
+  <!-- ============================================ -->
+  <!-- CONTENT AREA — safe zone for drawings        -->
+  <!-- ============================================ -->
+
+  <!-- Light inner frame for content area -->
+  <rect x="36" y="108" width="523" height="622" fill="none" stroke="#d4cfc5" stroke-width="0.5" stroke-dasharray="2,4" opacity="0.6"/>
+
+  <!-- Content area centre crosshair (registration mark) -->
+  <g opacity="0.15" stroke="#8a8d8f" stroke-width="0.5">
+    <line x1="293.5" y1="410" x2="301.5" y2="410"/>
+    <line x1="297.5" y1="406" x2="297.5" y2="414"/>
+  </g>
+
+  <!-- ============================================ -->
+  <!-- TITLE BLOCK — Bottom right (industry std)    -->
+  <!-- ============================================ -->
+
+  <!-- Title block outer border -->
+  <rect x="310" y="740" width="265" height="80" fill="#1a1a2e" rx="0.5" ry="0.5"/>
+  <rect x="310" y="740" width="265" height="80" fill="none" stroke="url(#goldGrad)" stroke-width="0.75" rx="0.5" ry="0.5"/>
+
+  <!-- Title block internal dividers -->
+  <!-- Horizontal dividers -->
+  <line x1="310" y1="760" x2="575" y2="760" stroke="#b8860b" stroke-width="0.4" opacity="0.5"/>
+  <line x1="310" y1="780" x2="575" y2="780" stroke="#b8860b" stroke-width="0.4" opacity="0.5"/>
+  <line x1="310" y1="800" x2="575" y2="800" stroke="#b8860b" stroke-width="0.4" opacity="0.5"/>
+
+  <!-- Vertical dividers -->
+  <line x1="395" y1="760" x2="395" y2="820" stroke="#b8860b" stroke-width="0.4" opacity="0.5"/>
+  <line x1="490" y1="760" x2="490" y2="800" stroke="#b8860b" stroke-width="0.4" opacity="0.5"/>
+
+  <!-- Title block header -->
+  <text x="442" y="754" font-family="Georgia, 'Times New Roman', serif" font-size="9" fill="#b8860b" text-anchor="middle" letter-spacing="3" font-weight="normal">
+    SPECIFICATION
+  </text>
+
+  <!-- Row labels -->
+  <text x="315" y="773" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="6" fill="#8a8d8f" letter-spacing="1">PROJECT</text>
+  <text x="315" y="793" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="6" fill="#8a8d8f" letter-spacing="1">PRODUCT</text>
+  <text x="315" y="813" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="6" fill="#8a8d8f" letter-spacing="1">CLIENT</text>
+
+  <!-- Row value placeholders -->
+  <text x="400" y="773" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="7" fill="#faf7f2" opacity="0.5">—</text>
+  <text x="400" y="793" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="7" fill="#faf7f2" opacity="0.5">—</text>
+  <text x="400" y="813" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="7" fill="#faf7f2" opacity="0.5">—</text>
+
+  <!-- Right-side labels -->
+  <text x="495" y="773" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="6" fill="#8a8d8f" letter-spacing="1">DATE</text>
+  <text x="495" y="793" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="6" fill="#8a8d8f" letter-spacing="1">SCALE</text>
+
+  <!-- Right-side value placeholders -->
+  <text x="535" y="773" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="7" fill="#faf7f2" opacity="0.5">—</text>
+  <text x="535" y="793" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="7" fill="#faf7f2" opacity="0.5">—</text>
+
+  <!-- Ref/drawing number row -->
+  <text x="315" y="813" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="6" fill="#8a8d8f" letter-spacing="1">REF</text>
+  <text x="400" y="813" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="7" fill="#faf7f2" opacity="0.5">HT-000-000</text>
+
+  <!-- ============================================ -->
+  <!-- FOOTER BAR                                   -->
+  <!-- ============================================ -->
+
+  <!-- Footer line -->
+  <line x1="36" y1="738" x2="305" y2="738" stroke="#d4cfc5" stroke-width="0.5" opacity="0.5"/>
+
+  <!-- Footer info — left side -->
+  <g transform="translate(36, 752)">
+    <!-- Decorative divider -->
+    <use href="#divider" x="0" y="0" width="120" height="6"/>
+  </g>
+
+  <text x="36" y="770" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="6.5" fill="#1a1a2e" opacity="0.6" letter-spacing="0.5">
+    Halman Thompson Ltd  |  75 Darras Road, Ponteland, Newcastle upon Tyne NE20 9PQ
+  </text>
+  <text x="36" y="782" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="6.5" fill="#1a1a2e" opacity="0.6" letter-spacing="0.5">
+    T: +44 7703 567916  |  E: Sales@halmanthompson.com  |  W: www.halmanthompson.com
+  </text>
+
+  <!-- Quality / disclaimer text -->
+  <text x="36" y="800" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="5" fill="#8a8d8f" letter-spacing="0.3">
+    All dimensions in millimetres unless stated otherwise. Each piece is hand-finished — natural variations in patina are inherent to the artisan process.
+  </text>
+  <text x="36" y="810" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="5" fill="#8a8d8f" letter-spacing="0.3">
+    This document is the property of Halman Thompson Ltd. Reproduction without permission is prohibited.
+  </text>
+
+  <!-- ============================================ -->
+  <!-- SIDE ACCENT — thin gold rule on left edge    -->
+  <!-- ============================================ -->
+  <line x1="22" y1="96" x2="22" y2="736" stroke="url(#goldGrad)" stroke-width="0.5" opacity="0.35"/>
+  <line x1="573" y1="96" x2="573" y2="736" stroke="url(#goldGrad)" stroke-width="0.5" opacity="0.35"/>
+
+  <!-- ============================================ -->
+  <!-- FOLD / MARGIN MARKS (print industry std)     -->
+  <!-- ============================================ -->
+  <g opacity="0.2" stroke="#8a8d8f" stroke-width="0.4">
+    <!-- Top centre -->
+    <line x1="297.5" y1="8" x2="297.5" y2="13"/>
+    <!-- Bottom centre -->
+    <line x1="297.5" y1="829" x2="297.5" y2="834"/>
+    <!-- Left centre -->
+    <line x1="8" y1="421" x2="13" y2="421"/>
+    <!-- Right centre -->
+    <line x1="582" y1="421" x2="587" y2="421"/>
+  </g>
+
+</svg>
