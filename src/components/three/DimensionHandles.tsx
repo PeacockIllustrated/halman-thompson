@@ -775,7 +775,7 @@ export function DimensionHandles({ width, depth, thickness, config }: Props) {
     return defs;
   }, [
     width, gauge, hd, config,
-    hasCutout, cutout, cutoutDMm,
+    hasCutout, cutout,
     cxS, czS, chdS,
     setWorktopConfig,
   ]);

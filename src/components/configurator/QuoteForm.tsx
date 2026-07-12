@@ -188,6 +188,9 @@ export function QuoteForm() {
       <div className="flex items-center gap-3">
         <button
           type="button"
+          role="switch"
+          aria-checked={isTrade}
+          aria-label="Trade customer"
           onClick={() => setIsTrade(!isTrade)}
           className={`relative h-5 w-9 rounded-full transition-colors ${isTrade ? "bg-ht-gold" : "bg-ht-dark/20"}`}
         >

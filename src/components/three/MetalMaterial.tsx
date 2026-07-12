@@ -229,7 +229,7 @@ function TexturedMetal({ finish, doubleSide }: { finish: Finish; doubleSide?: bo
     return () => {
       cancelled = true;
     };
-  }, [finish.textures.albedo, setTextureLoading]);
+  }, [finish.textures.albedo, finish.textures.realWorldWidthMm, setTextureLoading]);
 
   const material = useMemo(() => {
     if (!maps) return null;

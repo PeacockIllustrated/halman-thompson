@@ -74,6 +74,8 @@ export function FinishSelector() {
             <button
               key={finish.id}
               onClick={() => setFinish(finish)}
+              aria-label={finish.name}
+              aria-pressed={isSelected}
               className={cn(
                 "group flex flex-col items-center gap-2 rounded-xl p-2.5 transition-all duration-200",
                 isSelected
@@ -83,6 +85,7 @@ export function FinishSelector() {
             >
               <div className="relative">
                 {!finish.swatchImageUrl.includes("placeholder") ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={finish.swatchImageUrl}
                     alt={finish.name}

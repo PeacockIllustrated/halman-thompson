@@ -1,3 +1,4 @@
+import { getSupabaseUrl, getSupabaseServiceRoleKey } from "../env";
 import { getSupabaseAdmin } from "./server";
 
 const BUCKET = "quote-exports";
@@ -36,6 +37,12 @@ export async function uploadQuoteFile(
   content: string,
   mime: string
 ): Promise<string | null> {
+  // Surface missing Supabase configuration as a clear, descriptive error at
+  // call time — before the catch-all below, which is reserved for genuine
+  // upload failures (network, permissions) that should degrade to null.
+  getSupabaseUrl();
+  getSupabaseServiceRoleKey();
+
   try {
     await ensureBucket();
     const supabase = getSupabaseAdmin();

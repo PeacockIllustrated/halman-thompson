@@ -2,54 +2,11 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { HeroBackground } from "@/components/layout/HeroBackground";
+import { PRODUCT_TYPES } from "@/lib/products/catalogue";
 
-const PRODUCT_CATEGORIES = [
-  {
-    id: "splashback",
-    name: "Splashbacks",
-    description:
-      "Kitchen & bathroom splashbacks in aged copper, brass, and zinc",
-    startingPrice: 95,
-    active: true,
-  },
-  {
-    id: "worktop",
-    name: "Worktops",
-    description:
-      "Handcrafted metal worktops & countertops with returns, upstands, and artisan finishes",
-    startingPrice: 350,
-    active: true,
-  },
-  {
-    id: "bar_top",
-    name: "Bar Tops",
-    description: "Statement bar tops for pubs, restaurants, and home bars",
-    startingPrice: 320,
-    active: false,
-  },
-  {
-    id: "wall_panel",
-    name: "Wall Panels",
-    description: "Feature wall cladding and decorative panels",
-    startingPrice: 150,
-    active: false,
-  },
-  {
-    id: "signage",
-    name: "Metal Signage",
-    description:
-      "Engraved, laser cut, and 3D effect brass and zinc signs",
-    startingPrice: 120,
-    active: false,
-  },
-  {
-    id: "table_top",
-    name: "Table Tops",
-    description: "Dining and coffee table surfaces in artisan metals",
-    startingPrice: 250,
-    active: false,
-  },
-] as const;
+// Single source of truth: the product grid is derived from PRODUCT_TYPES in the
+// catalogue so names, prices, and active-state can never drift from the code the
+// pricing engine and configurator actually use.
 
 export default function HomePage() {
   return (
@@ -106,15 +63,15 @@ export default function HomePage() {
             Select a product to begin configuring.
           </p>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {PRODUCT_CATEGORIES.map((cat, i) => (
+            {PRODUCT_TYPES.map((product, i) => (
               <div
-                key={cat.id}
+                key={product.id}
                 className="group relative animate-[fadeSlideIn_0.5s_ease_both]"
                 style={{ animationDelay: `${150 + i * 80}ms` }}
               >
-                {cat.active ? (
+                {product.isActive ? (
                   <Link
-                    href={`/configure/${cat.id}`}
+                    href={`/configure/${product.id}`}
                     className="block overflow-hidden rounded-xl border border-ht-gold/20 bg-white p-6 shadow-sm transition-all duration-300 hover:border-ht-gold/50 hover:shadow-lg hover:-translate-y-1"
                   >
                     {/* Animated gradient swatch */}
@@ -124,14 +81,14 @@ export default function HomePage() {
                       />
                     </div>
                     <h3 className="font-serif text-lg font-semibold">
-                      {cat.name}
+                      {product.namePlural}
                     </h3>
                     <p className="mt-1 text-sm text-ht-dark/60">
-                      {cat.description}
+                      {product.description}
                     </p>
                     <div className="mt-3 flex items-center justify-between">
                       <p className="text-sm font-medium text-ht-gold">
-                        From &pound;{cat.startingPrice}
+                        From &pound;{product.startingPrice}
                       </p>
                       <span className="text-xs font-medium text-ht-gold/0 transition-colors group-hover:text-ht-gold">
                         Configure &rarr;
@@ -142,10 +99,10 @@ export default function HomePage() {
                   <div className="block rounded-xl border border-gray-200 bg-white/60 p-6 opacity-60">
                     <div className="mb-4 h-40 rounded-lg bg-gray-100" />
                     <h3 className="font-serif text-lg font-semibold">
-                      {cat.name}
+                      {product.namePlural}
                     </h3>
                     <p className="mt-1 text-sm text-ht-dark/60">
-                      {cat.description}
+                      {product.description}
                     </p>
                     <p className="mt-3 text-sm font-medium text-gray-400">
                       Coming Soon

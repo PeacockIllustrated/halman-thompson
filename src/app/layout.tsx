@@ -34,15 +34,55 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const siteTitle = "Halman Thompson | Bespoke Metal Configurator";
+const siteDescription =
+  "Configure your bespoke copper, brass, and zinc splashbacks, worktops, and signage with our interactive 3D visualiser.";
+
 export const metadata: Metadata = {
-  title: "Halman Thompson | Bespoke Metal Configurator",
-  description:
-    "Configure your bespoke copper, brass, and zinc splashbacks, worktops, and signage with our interactive 3D visualiser.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  ),
+  title: {
+    default: siteTitle,
+    template: "%s | Halman Thompson",
+  },
+  description: siteDescription,
+  keywords: [
+    "bespoke metal splashbacks",
+    "copper splashbacks",
+    "brass worktops",
+    "zinc worktops",
+    "aged metal finishes",
+    "patina copper",
+    "corten steel",
+    "bespoke metal fabrication",
+    "3D configurator",
+    "Halman Thompson",
+    "Newcastle upon Tyne",
+  ],
+  authors: [{ name: "Onesign & Digital" }],
+  creator: "Onesign & Digital",
+  robots: {
+    index: true,
+    follow: true,
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "HT Configurator",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Halman Thompson",
+    locale: "en_GB",
+    title: siteTitle,
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
   },
   other: {
     "mobile-web-app-capable": "yes",
