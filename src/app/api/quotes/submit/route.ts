@@ -96,7 +96,13 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Log the raw cause server-side; never leak DB/schema internals to the
+    // unauthenticated caller.
+    console.error("[quote-submit] Insert failed:", error.message);
+    return NextResponse.json(
+      { error: "Could not save your quote. Please try again." },
+      { status: 500 }
+    );
   }
 
   const quoteId = (data as { id: string })?.id;

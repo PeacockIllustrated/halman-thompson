@@ -22,7 +22,12 @@ export async function PUT(req: NextRequest) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const { id, ...fields } = body;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });

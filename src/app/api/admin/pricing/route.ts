@@ -22,7 +22,13 @@ export async function PUT(req: NextRequest) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
 
-  const { key, value } = await req.json();
+  let body: { key?: string; value?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { key, value } = body;
   if (!key) {
     return NextResponse.json({ error: "Missing key" }, { status: 400 });
   }

@@ -24,7 +24,13 @@ export async function PUT(req: NextRequest) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
 
-  const { id, price_modifier, is_active } = await req.json();
+  let body: { id?: string; price_modifier?: unknown; is_active?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { id, price_modifier, is_active } = body;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }

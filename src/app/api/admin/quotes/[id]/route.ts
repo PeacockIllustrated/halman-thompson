@@ -40,7 +40,12 @@ export async function PATCH(
   if (denied) return denied;
 
   const { id } = await params;
-  const body = await req.json();
+  let body: { status?: string; internal_notes?: string; calculated_price?: number };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const supabase = getSupabaseAdmin();
 
   // Fetch current quote for event logging
