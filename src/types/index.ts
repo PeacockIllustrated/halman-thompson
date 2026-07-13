@@ -135,6 +135,12 @@ export interface TextureSet {
   realWorldWidthMm: number;
   /** Physical height (mm) the source texture photograph represents */
   realWorldHeightMm: number;
+  /**
+   * Strength of the runtime-derived normal map (Sobel multiplier). Defaults to
+   * 1.5. Lower it for fine directional finishes (e.g. brushed metal) so the
+   * relief reads as a satin brush rather than deep grooves.
+   */
+  normalStrength?: number;
 }
 
 // ─── Finish ─────────────────────────────────────────────────────
@@ -249,6 +255,8 @@ export interface PricingRequest {
   panelCount: number;
   flatWidth?: number;
   flatHeight?: number;
+  /** Signage fabrication method — applies an extra labour multiplier. */
+  fabricationMethod?: FabricationMethod;
 }
 
 export interface PricingResponse {

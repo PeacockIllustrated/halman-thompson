@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { useConfiguratorStore } from "@/stores/configurator";
 import { generateSvg } from "@/lib/worktop/exportSvg";
 import { generateDxf } from "@/lib/worktop/exportDxf";
+import { isSurfaceProduct } from "@/lib/products/surfaces";
+import { getProductType } from "@/lib/products/catalogue";
 
 export function QuoteForm() {
   const [name, setName] = useState("");
@@ -50,7 +52,7 @@ export function QuoteForm() {
     let dxfExport: string | undefined;
     let flatSheetData: ReturnType<typeof getFlatSheet> = null;
 
-    if (productType === "worktop") {
+    if (isSurfaceProduct(productType)) {
       flatSheetData = getFlatSheet();
       if (flatSheetData) {
         const svgOpts = {
@@ -60,7 +62,7 @@ export function QuoteForm() {
           width,
           depth: height,
           thickness,
-          productName: "Worktop",
+          productName: getProductType(productType)?.name ?? "Panel",
         };
         try {
           svgWorkshop = generateSvg({ ...svgOpts, mode: "workshop" });
@@ -106,8 +108,8 @@ export function QuoteForm() {
       calculatedPrice,
       priceBreakdown,
       notes: notes || undefined,
-      worktopConfig: productType === "worktop" ? worktopConfig : undefined,
-      signageConfig: signageConfig || undefined,
+      worktopConfig: isSurfaceProduct(productType) ? worktopConfig : undefined,
+      signageConfig: productType === "signage" ? signageConfig || undefined : undefined,
       configurationUrl: configUrl,
       configurationSnapshot: snapshot,
       flatSheet: flatSheetData || undefined,
@@ -188,6 +190,9 @@ export function QuoteForm() {
       <div className="flex items-center gap-3">
         <button
           type="button"
+          role="switch"
+          aria-checked={isTrade}
+          aria-label="Trade customer"
           onClick={() => setIsTrade(!isTrade)}
           className={`relative h-5 w-9 rounded-full transition-colors ${isTrade ? "bg-ht-gold" : "bg-ht-dark/20"}`}
         >

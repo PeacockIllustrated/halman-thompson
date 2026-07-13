@@ -89,8 +89,9 @@ export const PRODUCT_TYPES: ProductTypeConfig[] = [
     hasLogoUpload: false,
     modelType: "surface_sheet",
     sortOrder: 3,
-    isActive: false,
+    isActive: true,
     phase: 2,
+    defaultFinishSlug: "antique-brass",
   },
   {
     id: "wall_panel",
@@ -116,8 +117,9 @@ export const PRODUCT_TYPES: ProductTypeConfig[] = [
     hasLogoUpload: false,
     modelType: "flat_sheet",
     sortOrder: 4,
-    isActive: false,
+    isActive: true,
     phase: 2,
+    defaultFinishSlug: "northumberland",
   },
   {
     id: "table_top",
@@ -143,8 +145,9 @@ export const PRODUCT_TYPES: ProductTypeConfig[] = [
     hasLogoUpload: false,
     modelType: "table_surface",
     sortOrder: 5,
-    isActive: false,
+    isActive: true,
     phase: 2,
+    defaultFinishSlug: "brushed-copper",
   },
 
   // ── Phase 3 ────────────────────────────────────────────────────
@@ -173,8 +176,9 @@ export const PRODUCT_TYPES: ProductTypeConfig[] = [
     hasLogoUpload: true,
     modelType: "plaque",
     sortOrder: 6,
-    isActive: false,
+    isActive: true,
     phase: 3,
+    defaultFinishSlug: "antique-brass",
   },
 ];
 

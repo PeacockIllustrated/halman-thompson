@@ -17,6 +17,8 @@ export function PriceDisplay() {
     mountingType,
     panelCount,
     productType,
+    worktopConfig,
+    signageConfig,
   } = useConfiguratorStore();
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -30,7 +32,7 @@ export function PriceDisplay() {
     }, 200);
 
     return () => clearTimeout(debounceRef.current);
-  }, [width, height, thickness, mountingType, panelCount, productType, selectedFinish, calculatePrice]);
+  }, [width, height, thickness, mountingType, panelCount, productType, selectedFinish, worktopConfig, signageConfig, calculatePrice]);
 
   if (!selectedFinish) {
     return (

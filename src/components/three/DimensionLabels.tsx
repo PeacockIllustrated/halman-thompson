@@ -6,6 +6,12 @@ interface DimensionLabelsProps {
   width: number;
   height: number;
   orientation?: "vertical" | "horizontal";
+  /**
+   * Overrides the second-dimension caption. Defaults to "Depth" for horizontal
+   * (top-down) products and "Height" for vertical ones — but a horizontally
+   * previewed yet wall-mounted product (e.g. a wall panel) is "Height".
+   */
+  heightLabel?: string;
 }
 
 const SCALE = 0.01;
@@ -15,6 +21,7 @@ export function DimensionLabels({
   width,
   height,
   orientation = "vertical",
+  heightLabel,
 }: DimensionLabelsProps) {
   const w = width * SCALE;
   const h = height * SCALE;
@@ -40,7 +47,8 @@ export function DimensionLabels({
     };
   }, [w, h, orientation]);
 
-  const heightLabel = orientation === "horizontal" ? "Depth" : "Height";
+  const secondDimLabel =
+    heightLabel ?? (orientation === "horizontal" ? "Depth" : "Height");
 
   return (
     <group>
@@ -55,7 +63,7 @@ export function DimensionLabels({
         style={{ pointerEvents: "none" }}
       >
         <div className="whitespace-nowrap rounded bg-ht-dark/80 px-2 py-0.5 text-xs font-medium tabular-nums text-white">
-          <span className="mr-1 text-white/60">{heightLabel}</span>
+          <span className="mr-1 text-white/60">{secondDimLabel}</span>
           {height}mm
         </div>
       </Html>

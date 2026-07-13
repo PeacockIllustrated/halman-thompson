@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getSupabaseUrl, getSupabaseAnonKey, getSupabaseServiceRoleKey } from "../env";
 import type { Database } from "./database.types";
 
 /**
@@ -9,8 +10,8 @@ import type { Database } from "./database.types";
 export async function getSupabaseServer() {
   const cookieStore = await cookies();
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseUrl(),
+    getSupabaseAnonKey(),
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
@@ -34,8 +35,8 @@ export async function getSupabaseServer() {
 export function getSupabaseAdmin() {
   // No cookies needed — service role bypasses RLS
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseUrl(),
+    getSupabaseServiceRoleKey(),
     { cookies: { getAll: () => [], setAll: () => {} } }
   );
 }

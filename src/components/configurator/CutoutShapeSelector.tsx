@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useConfiguratorStore } from "@/stores/configurator";
+import { isSurfaceProduct, surfaceUISpec } from "@/lib/products/surfaces";
 import type { CutoutShape } from "@/types";
 
 const shapes: { id: CutoutShape; label: string }[] = [
@@ -54,8 +55,11 @@ export function CutoutShapeSelector() {
   const { productType, worktopConfig, setWorktopConfig } =
     useConfiguratorStore();
 
+  // Products that offer a cutout (worktop, bar top) get the quick shape toggle.
+  const supportsCutout =
+    isSurfaceProduct(productType) && surfaceUISpec(productType).showCutout;
   // Track whether shapes tray should render (for exit animation)
-  const cutoutEnabled = productType === "worktop" && worktopConfig.cutout.enabled;
+  const cutoutEnabled = supportsCutout && worktopConfig.cutout.enabled;
   const [showShapes, setShowShapes] = useState(cutoutEnabled);
   const [animIn, setAnimIn] = useState(cutoutEnabled);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,7 +79,7 @@ export function CutoutShapeSelector() {
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
   }, [cutoutEnabled]);
 
-  if (productType !== "worktop") return null;
+  if (!supportsCutout) return null;
 
   const current = worktopConfig.cutout.shape;
 

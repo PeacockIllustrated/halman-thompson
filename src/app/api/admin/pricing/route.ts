@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
+
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("hal-tho_pricing_config")
@@ -15,7 +19,16 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const { key, value } = await req.json();
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
+
+  let body: { key?: string; value?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { key, value } = body;
   if (!key) {
     return NextResponse.json({ error: "Missing key" }, { status: 400 });
   }

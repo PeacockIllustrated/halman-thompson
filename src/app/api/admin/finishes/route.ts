@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import type { FinishConfigRow } from "@/lib/supabase/database.types";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
+
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("hal-tho_finish_config")
@@ -17,7 +21,16 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const { id, price_modifier, is_active } = await req.json();
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
+
+  let body: { id?: string; price_modifier?: unknown; is_active?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { id, price_modifier, is_active } = body;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }

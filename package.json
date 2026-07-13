@@ -9,6 +9,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "db:generate": "npx supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/lib/supabase/database.types.ts"
   },
   "dependencies": {

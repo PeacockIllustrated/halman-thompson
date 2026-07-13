@@ -7,6 +7,7 @@ import type {
 } from "@/types";
 import { getFinishById } from "@/lib/products/finishes";
 import { getProductType } from "@/lib/products/catalogue";
+import { signageMethod } from "@/lib/products/signage";
 
 /** Base price per m² by metal type (£) */
 const BASE_PRICE_PER_M2: Record<MetalType, number> = {
@@ -76,9 +77,14 @@ export function calculatePrice(request: PricingRequest): PricingResponse {
   const thicknessSurchargeRate = THICKNESS_SURCHARGE_PER_M2[request.thickness] ?? 0;
   const thicknessSurcharge = areaM2 * thicknessSurchargeRate;
 
-  // Labour cost (product-specific multiplier on base)
+  // Labour cost (product-specific multiplier on base). Signage additionally
+  // scales labour by its fabrication method (engraved 1.0 … 3D raised 1.35).
   const labourBase = baseMaterial * 0.15; // 15% of material cost as base labour
-  const labourCost = labourBase * product.labourMultiplier;
+  const methodLabour =
+    product.id === "signage" && request.fabricationMethod
+      ? signageMethod(request.fabricationMethod).labour
+      : 1;
+  const labourCost = labourBase * product.labourMultiplier * methodLabour;
 
   // Mounting prep
   const mountingPrep = MOUNTING_COSTS[request.mountingType] ?? 0;

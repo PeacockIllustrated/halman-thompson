@@ -1,8 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculatePrice } from "@/lib/pricing/engine";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 import type { PricingRequest } from "@/types";
 
 export async function POST(request: NextRequest) {
+  // Rate limit — this endpoint is called live from the configurator UI, so
+  // allow a generous burst per client (120 / min).
+  const rl = rateLimit(`pricing-calc:${clientKey(request)}`, {
+    limit: 120,
+    windowMs: 60 * 1000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) },
+      }
+    );
+  }
+
   try {
     const body = await request.json() as PricingRequest;
 

@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        // AI-generated homepage product imagery (Higgsfield CDN). Remove once
+        // the images are self-hosted under /public/images/products.
+        protocol: "https",
+        hostname: "d8j0ntlcm91z4.cloudfront.net",
+        pathname: "/**",
+      },
     ],
   },
   // Transpile Three.js packages for proper tree-shaking

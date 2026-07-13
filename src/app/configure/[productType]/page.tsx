@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { ProductViewer } from "@/components/configurator/ProductViewer";
@@ -9,9 +9,10 @@ import { ViewModeToggle } from "@/components/configurator/ViewModeToggle";
 import { EditModeToggle } from "@/components/configurator/EditModeToggle";
 import { CutoutShapeSelector } from "@/components/configurator/CutoutShapeSelector";
 import { ExportButton } from "@/components/configurator/ExportButton";
-import { useConfiguratorStore } from "@/stores/configurator";
+import { useConfiguratorStore, DEFAULT_SIGNAGE_CONFIG } from "@/stores/configurator";
 import { getProductType } from "@/lib/products/catalogue";
 import { getFinishBySlug } from "@/lib/products/finishes";
+import { isSurfaceProduct, defaultSurfaceConfig } from "@/lib/products/surfaces";
 import type { ProductType } from "@/types";
 
 export default function ConfigurePage() {
@@ -22,13 +23,40 @@ export default function ConfigurePage() {
       : params.productType?.[0] ?? "";
   const productConfig = getProductType(productTypeParam);
 
-  const { setProductType, setWidth, setHeight, setThickness, setFinish, selectedFinish } =
-    useConfiguratorStore();
+  const {
+    setProductType,
+    setWidth,
+    setHeight,
+    setThickness,
+    setFinish,
+    setWorktopConfig,
+    setSignageConfig,
+    selectedFinish,
+  } = useConfiguratorStore();
+
+  // Tracks which product type we've already applied defaults for, so that a
+  // later finish change (which re-runs this effect via the selectedFinish dep)
+  // does NOT wipe the user's dimensions / edges / signage customisation.
+  const initedFor = useRef<ProductType | null>(null);
 
   useEffect(() => {
     if (!productConfig || !productConfig.isActive) return;
 
-    setProductType(productConfig.id as ProductType);
+    const id = productConfig.id as ProductType;
+    // Only apply product defaults once per product type.
+    if (initedFor.current === id) return;
+    initedFor.current = id;
+
+    setProductType(id);
+
+    // Apply the product-appropriate folded-edge / signage defaults BEFORE
+    // dimensions, so panel-count derivation uses the correct config.
+    if (isSurfaceProduct(id)) {
+      setWorktopConfig(defaultSurfaceConfig(id));
+    } else if (id === "signage") {
+      setSignageConfig(DEFAULT_SIGNAGE_CONFIG);
+    }
+
     setWidth(productConfig.defaultWidth);
     setHeight(productConfig.defaultHeight);
     setThickness(productConfig.defaultThickness);
@@ -40,7 +68,7 @@ export default function ConfigurePage() {
         setFinish(defaultFinish);
       }
     }
-  }, [productConfig, setProductType, setWidth, setHeight, setThickness, setFinish, selectedFinish]);
+  }, [productConfig, setProductType, setWidth, setHeight, setThickness, setFinish, setWorktopConfig, setSignageConfig, selectedFinish]);
 
   if (!productConfig || !productConfig.isActive) {
     notFound();
@@ -62,11 +90,15 @@ export default function ConfigurePage() {
           <div className="absolute right-3 top-3 sm:right-4 sm:top-4">
             <CutoutShapeSelector />
           </div>
-          {/* View mode toggle + edit toggle — bottom-right of viewport */}
-          <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 flex items-center gap-2">
-            <EditModeToggle />
-            <ViewModeToggle />
-          </div>
+          {/* View mode toggle + edit toggle — bottom-right of viewport.
+              Fold / flat view + dimension editing only apply to folded-sheet
+              surface products. */}
+          {isSurfaceProduct(productConfig.id) && (
+            <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 flex items-center gap-2">
+              <EditModeToggle />
+              <ViewModeToggle />
+            </div>
+          )}
           {/* Export button — bottom-left of viewport */}
           <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4">
             <ExportButton />

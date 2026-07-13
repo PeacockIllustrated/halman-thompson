@@ -12,6 +12,16 @@ import type {
   WorktopConfig,
 } from "@/types";
 import { calculateFlatSheet } from "@/lib/worktop/flatSheet";
+import { isSurfaceProduct } from "@/lib/products/surfaces";
+
+export const DEFAULT_SIGNAGE_CONFIG: SignageConfig = {
+  text: "HALMAN THOMPSON",
+  fontFamily: "serif",
+  fontSize: 120,
+  fabricationMethod: "engraved",
+  hasBorder: true,
+  borderWidth: 15,
+};
 
 export const DEFAULT_WORKTOP_CONFIG: WorktopConfig = {
   cornerRadius: 12,
@@ -137,7 +147,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
 
   setWidth: (width: number) => {
     const state = get();
-    if (state.productType === "worktop") {
+    if (isSurfaceProduct(state.productType)) {
       const count = panelCountFromFlatSheet(width, state.height, state.thickness, state.worktopConfig);
       set({ width, panelCount: count, panelLayout: null, calculatedPrice: null });
     } else {
@@ -148,7 +158,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
 
   setHeight: (height: number) => {
     const state = get();
-    if (state.productType === "worktop") {
+    if (isSurfaceProduct(state.productType)) {
       const count = panelCountFromFlatSheet(state.width, height, state.thickness, state.worktopConfig);
       set({ height, panelCount: count, panelLayout: null, calculatedPrice: null });
     } else {
@@ -159,7 +169,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
 
   setThickness: (thickness: number) => {
     const state = get();
-    if (state.productType === "worktop") {
+    if (isSurfaceProduct(state.productType)) {
       const count = panelCountFromFlatSheet(state.width, state.height, thickness, state.worktopConfig);
       set({ thickness, panelCount: count, calculatedPrice: null });
     } else {
@@ -222,6 +232,9 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
           mountingType: state.mountingType,
           panelCount: state.panelCount,
           ...(flat ? { flatWidth: flat.totalWidth, flatHeight: flat.totalHeight } : {}),
+          ...(state.productType === "signage" && state.signageConfig
+            ? { fabricationMethod: state.signageConfig.fabricationMethod }
+            : {}),
         }),
       });
 
@@ -274,7 +287,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
       t: s.thickness,
       m: s.mountingType,
       l: s.lacquerType,
-      ...(s.signageConfig
+      ...(s.productType === "signage" && s.signageConfig
         ? {
             st: s.signageConfig.text,
             sf: s.signageConfig.fontFamily,
@@ -298,7 +311,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
 
   getFlatSheet: () => {
     const s = get();
-    if (s.productType !== "worktop") return null;
+    if (!isSurfaceProduct(s.productType)) return null;
     return calculateFlatSheet(s.width, s.height, s.thickness, s.worktopConfig);
   },
 }));
