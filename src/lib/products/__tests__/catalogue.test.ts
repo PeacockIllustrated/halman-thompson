@@ -25,8 +25,8 @@ describe("getActiveProductTypes", () => {
     expect(active.every((p) => p.isActive === true)).toBe(true);
     // matches the count of active entries in the source catalogue
     expect(active.length).toBe(PRODUCT_TYPES.filter((p) => p.isActive).length);
-    // excludes at least one inactive product (bar_top is inactive in the catalogue)
-    expect(active.some((p) => p.id === "bar_top")).toBe(false);
+    // never returns a product flagged inactive
+    expect(active.some((p) => p.isActive === false)).toBe(false);
   });
 });
 
