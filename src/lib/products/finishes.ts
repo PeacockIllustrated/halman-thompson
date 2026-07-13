@@ -163,6 +163,8 @@ export const FINISHES: Finish[] = [
       metalness: "/textures/brushed-copper/albedo.png",
       realWorldWidthMm: 500,
       realWorldHeightMm: 500,
+      // Fine satin brush — keep the relief shallow so it doesn't read as grooves.
+      normalStrength: 0.3,
     },
     swatchImageUrl: "/textures/brushed-copper/swatch.png",
     galleryImages: [],

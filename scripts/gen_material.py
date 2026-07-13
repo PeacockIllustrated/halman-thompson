@@ -18,7 +18,7 @@ Usage:
 """
 import argparse, os
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tileable value-noise fBm (period wraps → the whole texture tiles seamlessly)
@@ -235,7 +235,18 @@ def make_seamless_directional(src_path, size):
     maskY = ramp[:, None, None]
     return np.clip(flat * maskY + off * (1 - maskY), 0, 1)
 
-def make_seamless(src_path, size, feather_frac=0.25):
+def _flatten_lowfreq(a, size):
+    """Even out large-scale brightness (vignette / hero-shot lighting / a patina
+    concentrated in one region) by dividing out a heavily-blurred luminance.
+    Keeps mid/high-frequency detail (patina speckle, grain) so an AI 'hero'
+    texture tiles without its low-frequency structure repeating as a grid."""
+    lum = 0.299 * a[..., 0] + 0.587 * a[..., 1] + 0.114 * a[..., 2]
+    lum_img = Image.fromarray((np.clip(lum, 0, 1) * 255).astype("uint8"))
+    blur = np.asarray(lum_img.filter(ImageFilter.GaussianBlur(size * 0.17)), np.float32) / 255.0
+    gain = np.clip(lum.mean() / (blur + 1e-3), 0.5, 1.9)[..., None]
+    return np.clip(a * gain, 0, 1)
+
+def make_seamless(src_path, size, feather_frac=0.22, flatten=False):
     """Make an arbitrary (AI-generated / photographic) base image tileable — the
     'clean up the edges' step.
 
@@ -244,9 +255,14 @@ def make_seamless(src_path, size, feather_frac=0.25):
     The rolled image's central cross seam is healed by blending back toward the
     original, which is continuous there. `mask` is ~1 at the centre and ~0 at the
     borders, so: borders show the rolled image (seamless tile edge), the centre
-    shows the original (heals the rolled seam), with a feathered transition."""
+    shows the original (heals the rolled seam), with a feathered transition.
+
+    `flatten=True` first evens out low-frequency structure (recommended for AI
+    hero shots whose lighting/patina isn't uniform across the sheet)."""
     img = Image.open(src_path).convert("RGB").resize((size, size), Image.LANCZOS)
     a = np.asarray(img, np.float32) / 255.0
+    if flatten:
+        a = _flatten_lowfreq(a, size)
     off = np.roll(np.roll(a, size // 2, 0), size // 2, 1)
     feather = max(1, int(size * feather_frac))
     ramp = np.ones(size, np.float32)
@@ -266,6 +282,8 @@ def main():
     ap.add_argument("--seamless")
     ap.add_argument("--directional", action="store_true",
                     help="For --seamless brushed/directional bases: remove sheen bands + heal.")
+    ap.add_argument("--flatten", action="store_true",
+                    help="For --seamless organic hero shots: even out low-frequency lighting/patina first.")
     ap.add_argument("--previews", action="store_true")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
@@ -273,7 +291,7 @@ def main():
     if args.seamless and args.directional:
         albedo = make_seamless_directional(args.seamless, args.size)
     elif args.seamless:
-        albedo = make_seamless(args.seamless, args.size)
+        albedo = make_seamless(args.seamless, args.size, flatten=args.flatten)
     elif RECIPES.get(args.recipe, {}).get("brushed"):
         albedo = generate_brushed(args.recipe, args.size, args.seed)
     else:

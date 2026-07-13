@@ -214,7 +214,7 @@ function TexturedMetal({ finish, doubleSide }: { finish: Finish; doubleSide?: bo
 
       const derived = generatePBRMaps(
         albedo.image as HTMLImageElement,
-        1.5
+        finish.textures.normalStrength ?? 1.5
       );
 
       // Apply same repeat to all derived PBR maps
@@ -229,7 +229,7 @@ function TexturedMetal({ finish, doubleSide }: { finish: Finish; doubleSide?: bo
     return () => {
       cancelled = true;
     };
-  }, [finish.textures.albedo, finish.textures.realWorldWidthMm, setTextureLoading]);
+  }, [finish.textures.albedo, finish.textures.realWorldWidthMm, finish.textures.normalStrength, setTextureLoading]);
 
   const material = useMemo(() => {
     if (!maps) return null;
