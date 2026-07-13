@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils/cn";
 import { FinishSelector } from "./FinishSelector";
 import { DimensionControls } from "./DimensionControls";
 import { WorktopOptions } from "./WorktopOptions";
+import { SignageOptions } from "./SignageOptions";
 import { PriceDisplay } from "./PriceDisplay";
 import { ConfigSummary } from "./ConfigSummary";
 import { Button } from "@/components/ui/button";
 import { useConfiguratorStore } from "@/stores/configurator";
+import { isSurfaceProduct } from "@/lib/products/surfaces";
 import Link from "next/link";
 
 // ── Tab definitions ──────────────────────────────────────
@@ -69,10 +71,17 @@ function ReviewIcon() {
   );
 }
 
-const WORKTOP_TABS: TabDef[] = [
+const SURFACE_TABS: TabDef[] = [
   { id: "material", label: "Material", icon: <MaterialIcon /> },
   { id: "size", label: "Size", icon: <SizeIcon /> },
   { id: "options", label: "Edges", icon: <OptionsIcon /> },
+  { id: "review", label: "Review", icon: <ReviewIcon /> },
+];
+
+const SIGNAGE_TABS: TabDef[] = [
+  { id: "material", label: "Material", icon: <MaterialIcon /> },
+  { id: "options", label: "Design", icon: <OptionsIcon /> },
+  { id: "size", label: "Size", icon: <SizeIcon /> },
   { id: "review", label: "Review", icon: <ReviewIcon /> },
 ];
 
@@ -122,8 +131,9 @@ export function ConfigSidebar() {
   const [activeTab, setActiveTab] = useState<TabId>("material");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const isWorktop = productType === "worktop";
-  const tabs = isWorktop ? WORKTOP_TABS : DEFAULT_TABS;
+  const isSurface = isSurfaceProduct(productType);
+  const isSignage = productType === "signage";
+  const tabs = isSurface ? SURFACE_TABS : isSignage ? SIGNAGE_TABS : DEFAULT_TABS;
 
   const handleTabChange = (tabId: TabId) => {
     setActiveTab(tabId);
@@ -190,10 +200,10 @@ export function ConfigSidebar() {
             <DimensionControls />
           </TabPanel>
 
-          {/* Options tab — worktop only */}
-          {isWorktop && (
+          {/* Options tab — surface products (edges) and signage (design) */}
+          {(isSurface || isSignage) && (
             <TabPanel active={activeTab === "options"} className="space-y-6">
-              <WorktopOptions />
+              {isSurface ? <WorktopOptions /> : <SignageOptions />}
             </TabPanel>
           )}
 

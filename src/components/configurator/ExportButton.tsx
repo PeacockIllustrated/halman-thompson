@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useConfiguratorStore } from "@/stores/configurator";
 import { downloadSvg, type SvgExportMode } from "@/lib/worktop/exportSvg";
 import { downloadDxf } from "@/lib/worktop/exportDxf";
+import { isSurfaceProduct } from "@/lib/products/surfaces";
+import { getProductType } from "@/lib/products/catalogue";
 
 export function ExportButton() {
   const {
@@ -31,12 +33,13 @@ export function ExportButton() {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  if (productType !== "worktop" || viewMode !== "flat") return null;
+  if (!isSurfaceProduct(productType) || viewMode !== "flat") return null;
 
   const flatSheet = getFlatSheet();
   if (!flatSheet) return null;
 
   const finishName = selectedFinish?.name ?? "Custom";
+  const productName = getProductType(productType)?.name ?? "Panel";
 
   return (
     <div ref={containerRef} className="relative">
@@ -68,7 +71,7 @@ export function ExportButton() {
                   width,
                   depth: height,
                   thickness,
-                  productName: "Worktop",
+                  productName,
                   mode,
                 });
                 setOpen(false);

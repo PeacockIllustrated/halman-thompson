@@ -2,6 +2,7 @@
 
 import { useConfiguratorStore } from "@/stores/configurator";
 import { Slider } from "@/components/ui/slider";
+import { surfaceUISpec } from "@/lib/products/surfaces";
 import type {
   WorktopConfig,
   WorktopEdgeConfig,
@@ -83,10 +84,11 @@ const CUTOUT_SHAPES: { value: CutoutShape; label: string }[] = [
 ];
 
 export function WorktopOptions() {
-  const { worktopConfig, setWorktopConfig, width, height, getFlatSheet } =
+  const { worktopConfig, setWorktopConfig, width, height, getFlatSheet, productType } =
     useConfiguratorStore();
   const flatSheet = getFlatSheet();
   const config = worktopConfig;
+  const spec = surfaceUISpec(productType);
 
   const update = (partial: Partial<WorktopConfig>) => {
     setWorktopConfig({ ...config, ...partial });
@@ -119,20 +121,23 @@ export function WorktopOptions() {
     <div className="space-y-5">
       {/* ── Edge Profile ─────────────────────────── */}
       <div className="space-y-3">
-        <h3 className="font-serif text-lg font-semibold tracking-wide">Edge Profile</h3>
+        <h3 className="font-serif text-lg font-semibold tracking-wide">{spec.edgeTitle}</h3>
+        {spec.hint && (
+          <p className="text-xs text-ht-dark/45 -mt-1">{spec.hint}</p>
+        )}
         <Slider
           label="Corner Radius"
           value={config.cornerRadius}
           onValueChange={(v) => update({ cornerRadius: v })}
           min={0}
-          max={50}
+          max={spec.cornerRadiusMax}
           step={1}
           unit="mm"
         />
         {/* ── Returns (linked / unlinked) ── */}
         <div className="rounded-xl border border-ht-dark/[0.06] bg-white/60 p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-ht-dark">Returns</span>
+            <span className="text-sm font-semibold text-ht-dark">{spec.returnsTitle}</span>
             <button
               type="button"
               onClick={() => update({ returnsLinked: !config.returnsLinked })}
@@ -195,8 +200,8 @@ export function WorktopOptions() {
                     if (config.rightReturn.enabled) patch.rightReturn = { enabled: true, depth: v };
                     update(patch);
                   }}
-                  min={20}
-                  max={80}
+                  min={spec.returnMin}
+                  max={spec.returnMax}
                   step={5}
                   unit="mm"
                 />
@@ -208,48 +213,73 @@ export function WorktopOptions() {
                 label="Front Return"
                 config={config.frontReturn}
                 onChange={(v) => update({ frontReturn: v })}
+                min={spec.returnMin}
+                max={spec.returnMax}
               />
               <EdgeControl
                 label="Left Return"
                 config={config.leftReturn}
                 onChange={(v) => update({ leftReturn: v })}
+                min={spec.returnMin}
+                max={spec.returnMax}
               />
               <EdgeControl
                 label="Right Return"
                 config={config.rightReturn}
                 onChange={(v) => update({ rightReturn: v })}
+                min={spec.returnMin}
+                max={spec.returnMax}
               />
             </div>
           )}
         </div>
 
         {/* ── Back edge (upstand / return) ── */}
-        <EdgeControl
-          label="Back Upstand"
-          config={config.backUpstand}
-          onChange={(v) =>
-            update({
-              backUpstand: v,
-              ...(v.enabled ? { backReturn: { ...config.backReturn, enabled: false } } : {}),
-            })
-          }
-          min={50}
-          max={200}
-        />
-        <EdgeControl
-          label="Back Return"
-          config={config.backReturn}
-          onChange={(v) =>
-            update({
-              backReturn: v,
-              ...(v.enabled ? { backUpstand: { ...config.backUpstand, enabled: false } } : {}),
-            })
-          }
-        />
-        {config.backUpstand.enabled && config.cornerRadius > 0 && (
-          <p className="text-xs text-ht-dark/40 -mt-1">
-            Corner radius applies to front corners only when upstand is active
-          </p>
+        {spec.showUpstand ? (
+          <>
+            <EdgeControl
+              label="Back Upstand"
+              config={config.backUpstand}
+              onChange={(v) =>
+                update({
+                  backUpstand: v,
+                  ...(v.enabled ? { backReturn: { ...config.backReturn, enabled: false } } : {}),
+                })
+              }
+              min={50}
+              max={200}
+            />
+            <EdgeControl
+              label="Back Return"
+              config={config.backReturn}
+              onChange={(v) =>
+                update({
+                  backReturn: v,
+                  ...(v.enabled ? { backUpstand: { ...config.backUpstand, enabled: false } } : {}),
+                })
+              }
+              min={spec.returnMin}
+              max={spec.returnMax}
+            />
+            {config.backUpstand.enabled && config.cornerRadius > 0 && (
+              <p className="text-xs text-ht-dark/40 -mt-1">
+                Corner radius applies to front corners only when upstand is active
+              </p>
+            )}
+          </>
+        ) : (
+          <EdgeControl
+            label={spec.backLabel}
+            config={config.backReturn}
+            onChange={(v) =>
+              update({
+                backReturn: v,
+                backUpstand: { ...config.backUpstand, enabled: false },
+              })
+            }
+            min={spec.returnMin}
+            max={spec.returnMax}
+          />
         )}
       </div>
 
@@ -271,12 +301,13 @@ export function WorktopOptions() {
         </div>
       )}
 
-      {/* ── Sink Cutout ──────────────────────────── */}
+      {/* ── Cutout ───────────────────────────────── */}
+      {spec.showCutout && (
       <div className="space-y-3">
-        <h3 className="font-serif text-lg font-semibold tracking-wide">Sink Cutout</h3>
+        <h3 className="font-serif text-lg font-semibold tracking-wide">{spec.cutoutTitle}</h3>
         <div className="rounded-xl border border-ht-dark/[0.06] p-3.5">
           <Toggle
-            label="Add Sink Cutout"
+            label={spec.cutoutToggleLabel}
             checked={config.cutout.enabled}
             onChange={(v) => updateCutout({ enabled: v })}
           />
@@ -442,6 +473,7 @@ export function WorktopOptions() {
           </>
         )}
       </div>
+      )}
     </div>
   );
 }

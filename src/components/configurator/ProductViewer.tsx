@@ -5,11 +5,13 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { MetalSheet } from "@/components/three/MetalSheet";
 import { WorktopModel } from "@/components/three/WorktopModel";
+import { SignageModel } from "@/components/three/SignageModel";
 import { SceneEnvironment } from "@/components/three/SceneEnvironment";
 import { PanelLines } from "@/components/three/PanelLines";
 import { DimensionLabels } from "@/components/three/DimensionLabels";
 import { DimensionHandles } from "@/components/three/DimensionHandles";
 import { useConfiguratorStore } from "@/stores/configurator";
+import { isSurfaceProduct } from "@/lib/products/surfaces";
 
 function LoadingFallback() {
   return (
@@ -112,18 +114,20 @@ function Scene() {
     selectedFinish,
     panelLayout,
     worktopConfig,
+    signageConfig,
     editMode,
   } = useConfiguratorStore();
 
   const isAged = selectedFinish?.isAged ?? false;
-  const isWorktop = productType === "worktop";
+  const isSurface = isSurfaceProduct(productType);
+  const isSignage = productType === "signage";
 
   return (
     <>
       <SceneBackground />
       <SceneFog />
       <SceneEnvironment />
-      {isWorktop ? (
+      {isSurface ? (
         <>
           <WorktopModel
             width={width}
@@ -154,6 +158,18 @@ function Scene() {
             />
           )}
         </>
+      ) : isSignage ? (
+        <>
+          <SignageModel
+            width={width}
+            height={height}
+            thickness={thickness}
+            baseMetal={baseMetal}
+            isAged={isAged}
+            config={signageConfig}
+          />
+          <DimensionLabels width={width} height={height} />
+        </>
       ) : (
         <>
           <MetalSheet
@@ -178,7 +194,7 @@ function Scene() {
 
 export function ProductViewer() {
   const productType = useConfiguratorStore((s) => s.productType);
-  const isWorktop = productType === "worktop";
+  const isSurface = isSurfaceProduct(productType);
 
   return (
     <ViewerErrorBoundary>
@@ -186,7 +202,7 @@ export function ProductViewer() {
         <TextureLoadingOverlay />
         <Canvas
           camera={{
-            position: isWorktop ? [0, 7, 9] : [0, 0, 12],
+            position: isSurface ? [0, 7, 9] : [0, 0, 12],
             fov: 45,
           }}
           gl={{
