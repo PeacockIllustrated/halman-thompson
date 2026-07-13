@@ -51,6 +51,22 @@ def ridged(n, base_period, octaves, rng):
     f = fbm(n, base_period, octaves, rng)
     return 1.0 - np.abs(2.0 * f - 1.0)
 
+def _tileable_noise_1d(n, period, rng):
+    period = max(2, int(period))
+    lat = rng.random(period).astype(np.float32)
+    u = (np.arange(n, dtype=np.float32) / n) * period
+    i0 = np.floor(u).astype(int) % period
+    i1 = (i0 + 1) % period
+    f = _fade(u - np.floor(u))
+    return lat[i0] * (1 - f) + lat[i1] * f
+
+def fbm_1d(n, base_period, octaves, rng, persistence=0.5, lacunarity=2.0):
+    total = np.zeros(n, np.float32); amp = 1.0; freq = base_period; norm = 0.0
+    for _ in range(octaves):
+        total += amp * _tileable_noise_1d(n, round(freq), rng)
+        norm += amp; amp *= persistence; freq *= lacunarity
+    return total / norm
+
 def smoothstep(a, b, x):
     t = np.clip((x - a) / (b - a + 1e-9), 0, 1)
     return t * t * (3 - 2 * t)
@@ -98,7 +114,42 @@ RECIPES = {
         "verd_dark":   (0.26, 0.34, 0.36),
         "verd_amount": 0.16, "burnish_amount": 0.45, "grain_amount": 0.20,
     },
+    # Directional/anisotropic finishes — fine horizontal brush striations.
+    "brushed-copper": {
+        "brushed": True,
+        "shadow": (0.42, 0.24, 0.13),
+        "base":   (0.74, 0.47, 0.27),
+        "hi":     (0.94, 0.69, 0.45),
+    },
 }
+
+def generate_brushed(recipe_name, size, seed):
+    """Fine directional (horizontal) brushed metal. Variation runs across the
+    brush direction (row to row) → long thin striations; broadcasting one axis
+    keeps it perfectly seamless both ways."""
+    r = RECIPES[recipe_name]
+    rng = np.random.default_rng(seed)
+    n = size
+
+    fine  = fbm_1d(n, n // 2, 5, rng, persistence=0.65)  # dense fine striations
+    hair  = _tileable_noise_1d(n, n, rng)                 # per-row micro hairlines
+    broad = fbm_1d(n, 8, 2, rng)                          # gentle long tonal drift
+    lines = 0.70 * fine + 0.18 * hair + 0.12 * broad
+    lines = (lines - lines.min()) / (np.ptp(lines) + 1e-9)
+    linesY = lines[:, None] * np.ones(n, np.float32)[None, :]
+    tone   = smoothstep(0.2, 0.85, fbm(n, 4, 3, rng))     # very gentle sheet sheen
+    breakx = fbm(n, 6, 2, rng)                            # faint along-brush variation
+    micro  = fbm(n, 240, 2, rng)                          # tiny sparkle
+
+    bright = np.clip(
+        0.5 + (linesY - 0.5) * 1.5 + (tone - 0.5) * 0.14
+        + (breakx - 0.5) * 0.06 + (micro - 0.5) * 0.10, 0, 1)
+
+    col = _lerp(r["shadow"], r["base"], smoothstep(0.18, 0.6, bright))
+    hi_m = smoothstep(0.6, 0.96, bright)
+    col = col * (1 - hi_m[..., None]) + np.array(r["hi"])[None, None, :] * hi_m[..., None]
+    col = col + rng.normal(0, 0.004, col.shape).astype(np.float32)
+    return np.clip(col, 0, 1)
 
 def generate_albedo(recipe_name, size, seed):
     r = RECIPES[recipe_name]
@@ -193,6 +244,8 @@ def main():
 
     if args.seamless:
         albedo = make_seamless(args.seamless, args.size)
+    elif RECIPES.get(args.recipe, {}).get("brushed"):
+        albedo = generate_brushed(args.recipe, args.size, args.seed)
     else:
         albedo = generate_albedo(args.recipe, args.size, args.seed)
 
