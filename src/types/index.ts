@@ -255,6 +255,8 @@ export interface PricingRequest {
   panelCount: number;
   flatWidth?: number;
   flatHeight?: number;
+  /** Signage fabrication method — applies an extra labour multiplier. */
+  fabricationMethod?: FabricationMethod;
 }
 
 export interface PricingResponse {

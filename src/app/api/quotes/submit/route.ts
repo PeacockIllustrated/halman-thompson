@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     ...(v.flatWidth !== undefined && v.flatHeight !== undefined
       ? { flatWidth: v.flatWidth, flatHeight: v.flatHeight }
       : {}),
+    ...(v.fabricationMethod ? { fabricationMethod: v.fabricationMethod } : {}),
   };
   const pricing = calculatePrice(pricingRequest);
 

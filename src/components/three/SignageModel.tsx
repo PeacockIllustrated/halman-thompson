@@ -113,12 +113,21 @@ export function SignageModel({
   // ── Raised border frame (optional) ──
   const borderGeo = useMemo(() => {
     if (!cfg?.hasBorder) return null;
-    const bw = (cfg.borderWidth ?? 15) * SCALE;
+    const rawBw = (cfg.borderWidth ?? 15) * SCALE;
+    // Cap the border so the framed opening stays positive on small / short
+    // plaques — otherwise the inner hole inverts and the frame renders as
+    // overlapping metal covering the lettering.
+    const maxBw = Math.min(w, h) / 3 - 0.04;
+    const bw = Math.max(0, Math.min(rawBw, maxBw));
+    if (bw <= 0.015) return null;
     const inset = Math.max(bw * 0.5, 0.04);
+    const innerW = w - inset * 2 - bw * 2;
+    const innerH = h - inset * 2 - bw * 2;
+    if (innerW <= 0.02 || innerH <= 0.02) return null;
     const outer = roundedRect(w - inset * 2, h - inset * 2, Math.max(0, cornerR - inset));
     const inner = roundedRect(
-      w - inset * 2 - bw * 2,
-      h - inset * 2 - bw * 2,
+      innerW,
+      innerH,
       Math.max(0, cornerR - inset - bw)
     );
     // Convert inner shape to a hole path

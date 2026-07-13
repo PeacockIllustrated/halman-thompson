@@ -109,7 +109,7 @@ export function QuoteForm() {
       priceBreakdown,
       notes: notes || undefined,
       worktopConfig: isSurfaceProduct(productType) ? worktopConfig : undefined,
-      signageConfig: signageConfig || undefined,
+      signageConfig: productType === "signage" ? signageConfig || undefined : undefined,
       configurationUrl: configUrl,
       configurationSnapshot: snapshot,
       flatSheet: flatSheetData || undefined,

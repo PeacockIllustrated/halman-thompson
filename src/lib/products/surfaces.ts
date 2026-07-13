@@ -132,7 +132,9 @@ export function surfaceUISpec(pt: ProductType): SurfaceUISpec {
         returnsTitle: "Aprons / Drop",
         frontLabel: "Bar Front",
         backLabel: "Back Apron",
-        showUpstand: true,
+        // Boxed bar top: a back apron (drop), never a wall upstand — offering
+        // both on the same edge is physically contradictory.
+        showUpstand: false,
         showCutout: true,
         cutoutTitle: "Sink / Well Cutout",
         cutoutToggleLabel: "Add Cutout",

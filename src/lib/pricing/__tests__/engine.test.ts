@@ -102,3 +102,58 @@ describe("calculatePrice", () => {
     expect(res.breakdown.total).toBe(0);
   });
 });
+
+describe("signage fabrication method labour", () => {
+  // Signage (labourMultiplier 2.0). The fabrication method applies an extra
+  // labour multiplier on top: engraved 1.0, etched 0.9, laser_cut 1.15,
+  // 3d_effect 1.35.
+  const SIGNAGE_BASE: PricingRequest = {
+    productType: "signage",
+    finishId: "northumberland",
+    width: 400,
+    height: 200,
+    thickness: 1.2,
+    mountingType: "none",
+    panelCount: 1,
+  };
+
+  it("scales labour by the fabrication method multiplier", () => {
+    const engraved = calculatePrice({ ...SIGNAGE_BASE, fabricationMethod: "engraved" });
+    const raised = calculatePrice({ ...SIGNAGE_BASE, fabricationMethod: "3d_effect" });
+    const etched = calculatePrice({ ...SIGNAGE_BASE, fabricationMethod: "etched" });
+
+    // Only labour differs; it scales exactly by the method multiplier.
+    expect(raised.breakdown.labourCost).toBeCloseTo(
+      engraved.breakdown.labourCost * 1.35,
+      2
+    );
+    expect(etched.breakdown.labourCost).toBeCloseTo(
+      engraved.breakdown.labourCost * 0.9,
+      2
+    );
+
+    // A costlier method raises the quoted total; a cheaper one lowers it.
+    expect(raised.totalPrice).toBeGreaterThan(engraved.totalPrice);
+    expect(etched.totalPrice).toBeLessThan(engraved.totalPrice);
+
+    // Material cost is unaffected by the fabrication method.
+    expect(raised.breakdown.baseMaterial).toBeCloseTo(
+      engraved.breakdown.baseMaterial,
+      2
+    );
+  });
+
+  it("treats an omitted method as the neutral (engraved) multiplier", () => {
+    const engraved = calculatePrice({ ...SIGNAGE_BASE, fabricationMethod: "engraved" });
+    const none = calculatePrice({ ...SIGNAGE_BASE });
+    expect(none.totalPrice).toBeCloseTo(engraved.totalPrice, 2);
+  });
+
+  it("ignores fabricationMethod for non-signage products", () => {
+    const plain = calculatePrice(BASE_REQUEST);
+    const withMethod = calculatePrice({ ...BASE_REQUEST, fabricationMethod: "3d_effect" });
+    // A splashback's labour must never be moved by a signage-only method.
+    expect(withMethod.breakdown.labourCost).toBeCloseTo(plain.breakdown.labourCost, 2);
+    expect(withMethod.totalPrice).toBeCloseTo(plain.totalPrice, 2);
+  });
+});

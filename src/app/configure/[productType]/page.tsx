@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { ProductViewer } from "@/components/configurator/ProductViewer";
@@ -34,10 +34,19 @@ export default function ConfigurePage() {
     selectedFinish,
   } = useConfiguratorStore();
 
+  // Tracks which product type we've already applied defaults for, so that a
+  // later finish change (which re-runs this effect via the selectedFinish dep)
+  // does NOT wipe the user's dimensions / edges / signage customisation.
+  const initedFor = useRef<ProductType | null>(null);
+
   useEffect(() => {
     if (!productConfig || !productConfig.isActive) return;
 
     const id = productConfig.id as ProductType;
+    // Only apply product defaults once per product type.
+    if (initedFor.current === id) return;
+    initedFor.current = id;
+
     setProductType(id);
 
     // Apply the product-appropriate folded-edge / signage defaults BEFORE

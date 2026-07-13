@@ -148,6 +148,7 @@ function Scene() {
             width={width}
             height={height}
             orientation="horizontal"
+            heightLabel={productType === "wall_panel" ? "Height" : "Depth"}
           />
           {editMode && (
             <DimensionHandles

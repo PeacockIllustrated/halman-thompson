@@ -3,7 +3,7 @@
 // is never trusted: every field is checked and normalised before it reaches
 // the database or the pricing engine. Import from @/lib/validation
 
-import type { MountingType, ProductType } from "@/types";
+import type { FabricationMethod, MountingType, ProductType } from "@/types";
 import { getProductType } from "@/lib/products/catalogue";
 import { getFinishById } from "@/lib/products/finishes";
 
@@ -34,6 +34,8 @@ export interface ValidatedQuoteSubmission {
   /** Present only when the client supplied unfolded flat-sheet dimensions. */
   flatWidth?: number;
   flatHeight?: number;
+  /** Signage fabrication method — validated against the product's allowed set. */
+  fabricationMethod?: FabricationMethod;
 }
 
 export type ValidationResult =
@@ -150,6 +152,25 @@ export function validateQuoteSubmission(body: unknown): ValidationResult {
     }
   }
 
+  // Signage fabrication method — only meaningful for signage, and must be one
+  // of the product's allowed methods (it affects the server-computed labour).
+  let fabricationMethod: FabricationMethod | undefined;
+  if (
+    product.id === "signage" &&
+    typeof b.signageConfig === "object" &&
+    b.signageConfig !== null
+  ) {
+    const sc = b.signageConfig as Record<string, unknown>;
+    if (
+      typeof sc.fabricationMethod === "string" &&
+      (product.allowedFabricationMethods as readonly string[]).includes(
+        sc.fabricationMethod
+      )
+    ) {
+      fabricationMethod = sc.fabricationMethod as FabricationMethod;
+    }
+  }
+
   const value: ValidatedQuoteSubmission = {
     customerName,
     customerEmail,
@@ -165,6 +186,9 @@ export function validateQuoteSubmission(body: unknown): ValidationResult {
   if (flatWidth !== undefined && flatHeight !== undefined) {
     value.flatWidth = flatWidth;
     value.flatHeight = flatHeight;
+  }
+  if (fabricationMethod !== undefined) {
+    value.fabricationMethod = fabricationMethod;
   }
 
   return { ok: true, value };

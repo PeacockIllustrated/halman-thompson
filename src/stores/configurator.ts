@@ -232,6 +232,9 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
           mountingType: state.mountingType,
           panelCount: state.panelCount,
           ...(flat ? { flatWidth: flat.totalWidth, flatHeight: flat.totalHeight } : {}),
+          ...(state.productType === "signage" && state.signageConfig
+            ? { fabricationMethod: state.signageConfig.fabricationMethod }
+            : {}),
         }),
       });
 
@@ -284,7 +287,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
       t: s.thickness,
       m: s.mountingType,
       l: s.lacquerType,
-      ...(s.signageConfig
+      ...(s.productType === "signage" && s.signageConfig
         ? {
             st: s.signageConfig.text,
             sf: s.signageConfig.fontFamily,
