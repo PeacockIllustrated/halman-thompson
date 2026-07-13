@@ -217,18 +217,44 @@ def make_swatch(albedo, size=512):
     x0 = (w-c)//2
     return img.crop((x0, x0, x0+c, x0+c)).resize((size, size), Image.LANCZOS)
 
-def make_seamless(src_path, size):
-    """Offset-by-half + feather the seam — the 'clean up the edges' step for an
-    arbitrary (AI-generated) base image."""
+def make_seamless_directional(src_path, size):
+    """Tile a DIRECTIONAL (brushed) photographic base. AI 'hero' brushed shots
+    carry dramatic vertical sheen bands that don't tile; normalising per-column
+    removes those bands exactly while keeping the fine horizontal hairlines
+    (which vary along Y). The sheet is then uniform across X (tiles in X for
+    free); only the vertical hairline seam needs a feathered heal."""
     img = Image.open(src_path).convert("RGB").resize((size, size), Image.LANCZOS)
     a = np.asarray(img, np.float32) / 255.0
-    off = np.roll(np.roll(a, size//2, 0), size//2, 1)   # bring seams to the centre
-    feather = size // 8
+    prof = a.mean(axis=0, keepdims=True)                  # 1xWx3 sheen profile
+    target = a.mean(axis=(0, 1), keepdims=True)
+    flat = np.clip(a * np.clip(target / (prof + 1e-3), 0.5, 1.8), 0, 1)
+    off = np.roll(flat, size // 2, 0)
+    f = max(1, int(size * 0.10))
+    ramp = np.ones(size, np.float32); t = np.linspace(0, 1, f)
+    ramp[:f] = t; ramp[-f:] = t[::-1]
+    maskY = ramp[:, None, None]
+    return np.clip(flat * maskY + off * (1 - maskY), 0, 1)
+
+def make_seamless(src_path, size, feather_frac=0.25):
+    """Make an arbitrary (AI-generated / photographic) base image tileable — the
+    'clean up the edges' step.
+
+    Roll the image by half in both axes so its non-matching borders move to the
+    centre; the NEW borders (formerly continuous interior) then tile perfectly.
+    The rolled image's central cross seam is healed by blending back toward the
+    original, which is continuous there. `mask` is ~1 at the centre and ~0 at the
+    borders, so: borders show the rolled image (seamless tile edge), the centre
+    shows the original (heals the rolled seam), with a feathered transition."""
+    img = Image.open(src_path).convert("RGB").resize((size, size), Image.LANCZOS)
+    a = np.asarray(img, np.float32) / 255.0
+    off = np.roll(np.roll(a, size // 2, 0), size // 2, 1)
+    feather = max(1, int(size * feather_frac))
     ramp = np.ones(size, np.float32)
     x = np.linspace(0, 1, feather)
-    ramp[:feather] = x; ramp[-feather:] = x[::-1]
-    mask = np.minimum(ramp[None, :], ramp[:, None])[..., None]  # low at centre cross
-    blended = off * mask + np.roll(np.roll(off, size//2, 0), size//2, 1) * (1 - mask)
+    ramp[:feather] = x
+    ramp[-feather:] = x[::-1]                              # 0 at borders, 1 interior
+    mask = np.minimum(ramp[None, :], ramp[:, None])[..., None]
+    blended = a * mask + off * (1 - mask)
     return np.clip(blended, 0, 1)
 
 def main():
@@ -238,11 +264,15 @@ def main():
     ap.add_argument("--size", type=int, default=1024)
     ap.add_argument("--out", required=True)
     ap.add_argument("--seamless")
+    ap.add_argument("--directional", action="store_true",
+                    help="For --seamless brushed/directional bases: remove sheen bands + heal.")
     ap.add_argument("--previews", action="store_true")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
 
-    if args.seamless:
+    if args.seamless and args.directional:
+        albedo = make_seamless_directional(args.seamless, args.size)
+    elif args.seamless:
         albedo = make_seamless(args.seamless, args.size)
     elif RECIPES.get(args.recipe, {}).get("brushed"):
         albedo = generate_brushed(args.recipe, args.size, args.seed)
