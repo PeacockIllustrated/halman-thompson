@@ -35,3 +35,15 @@ Every change is checked in Chromium over HTTP at 1440×900 and 390×844, screen 
   - Each finish's surface maps are derived from its photographed swatch.
   - Runs over 2,000mm show panel joints and a note.
   - "Send this spec" fills the quote form. It does not show a price.
+
+## Round 4: product copy as components, splash
+
+- The generator now turns common copy patterns on the ~60 product pages into components (`v5.py`):
+  - **Finish lists** ("X finish – description") become swatch cards that link to each finish.
+  - **Process copy** ("works like this:" followed by short steps) becomes numbered steps on charcoal, each with an icon.
+  - **Short sub-headed paragraphs** become icon feature cards.
+  - **Benefit lists** become icon lists.
+- **"Ready to go"** is now a split photo card on charcoal with four feature chips and quote/sample buttons.
+- **Splash.** On the first page load of a visit, the HT monogram draws itself (bronze crown, then the charcoal H stroked and filled, then the stem rising), and the wordmark fades in.
+  - It lifts away after about 2.5s, and a click skips it.
+  - It is skipped for reduced-motion visitors and for later pages in the same visit (sessionStorage).

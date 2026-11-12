@@ -1,5 +1,13 @@
 // Preview behaviour: forms confirm in the page because this build has no shop or mail backend.
 document.documentElement.classList.add('js');
+(function () {
+  var sp = document.getElementById('splash');
+  if (!sp) return;
+  var done = function () { if (sp.parentNode) sp.remove(); };
+  sp.addEventListener('click', function () { sp.classList.add('go'); setTimeout(done, 650); });
+  sp.addEventListener('animationend', function (e) { if (e.target === sp) done(); });
+  setTimeout(done, 4200);
+})();
 document.querySelectorAll('form.js-sample, form.js-order, form.js-enquiry').forEach(function (f) {
   f.addEventListener('submit', function (e) {
     e.preventDefault();
