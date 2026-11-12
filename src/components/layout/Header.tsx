@@ -26,39 +26,71 @@ function HTLogo({ className }: { className?: string }) {
   );
 }
 
-export function Header() {
+interface HeaderProps {
+  /** "overlay" floats over a full-bleed hero; "solid" sits above app chrome */
+  variant?: "overlay" | "solid";
+  /** Optional context label shown next to the wordmark (e.g. product name) */
+  context?: string;
+}
+
+export function Header({ variant = "solid", context }: HeaderProps) {
+  const overlay = variant === "overlay";
   return (
-    <header className="flex-shrink-0 border-b border-white/[0.06] bg-ht-dark px-4 py-2 sm:px-6 sm:py-3 lg:py-4">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 sm:gap-3">
-          <HTLogo className="h-7 w-auto text-ht-gold sm:h-8 lg:h-9" />
-          <div className="flex flex-col">
-            <span className="font-serif text-sm tracking-[0.15em] text-white sm:text-base lg:text-lg">
-              Halman Thompson
+    <header
+      className={
+        overlay
+          ? "absolute inset-x-0 top-0 z-30 px-4 py-4 sm:px-8 sm:py-6"
+          : "relative z-30 flex-shrink-0 border-b border-white/[0.07] bg-ht-dark px-4 py-2.5 sm:px-6 sm:py-3"
+      }
+    >
+      <div
+        className={`mx-auto flex items-center justify-between ${overlay ? "max-w-7xl" : ""}`}
+      >
+        <div className="flex min-w-0 items-center gap-4">
+          <Link href="/" className="group flex items-center gap-3" aria-label="Halman Thompson home">
+            <HTLogo className="h-7 w-auto flex-shrink-0 text-ht-gold transition-transform duration-500 group-hover:scale-105 sm:h-8" />
+            <span className="flex flex-col leading-none">
+              <span className="font-serif text-[15px] tracking-[0.02em] text-white sm:text-[17px]">
+                Halman Thompson
+              </span>
+              <span className="mt-1 hidden text-[9px] font-medium uppercase tracking-[0.32em] text-white/40 sm:inline">
+                Bespoke Metal Creations
+              </span>
             </span>
-            <span className="hidden text-[9px] tracking-[0.25em] text-ht-gold/60 sm:inline lg:text-[10px]">
-              BESPOKE METAL CREATIONS
+          </Link>
+          {context && (
+            <span className="hidden min-w-0 items-center gap-4 md:flex">
+              <span className="h-6 w-px bg-white/10" />
+              <span className="truncate font-serif text-[15px] italic text-ht-gold-light/80">
+                {context}
+              </span>
             </span>
-          </div>
-        </Link>
-        <nav className="flex items-center gap-3 text-sm text-white/70 sm:gap-6">
+          )}
+        </div>
+        <nav className="flex items-center gap-1 text-[13px] font-medium text-white/60 sm:gap-2">
           <Link
-            href="/"
-            className="hidden transition-colors hover:text-ht-gold sm:inline"
+            href="/#products"
+            className="hidden rounded-full px-3.5 py-2 transition-colors hover:text-white sm:inline"
           >
             Products
           </Link>
           <Link
-            href="/admin"
-            className="hidden transition-colors hover:text-ht-gold sm:inline"
+            href="/#finishes"
+            className="hidden rounded-full px-3.5 py-2 transition-colors hover:text-white md:inline"
           >
-            Admin
+            Finishes
           </Link>
+          <a
+            href="https://halmanthompson.com"
+            className="hidden rounded-full px-3.5 py-2 transition-colors hover:text-white lg:inline"
+          >
+            Main site
+          </a>
           <Link
             href="/configure/splashback"
-            className="rounded-lg bg-ht-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:bg-ht-gold/90 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm"
+            className="ml-1 rounded-full border border-ht-gold/50 px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-ht-gold-light transition-all duration-300 hover:border-ht-gold hover:bg-ht-gold hover:text-ht-dark sm:ml-2"
           >
-            Configure
+            Design yours
           </Link>
         </nav>
       </div>

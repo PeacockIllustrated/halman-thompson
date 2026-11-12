@@ -1,7 +1,7 @@
 "use client";
 
-import { Component, type ReactNode, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Component, type ReactNode, useEffect, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { MetalSheet } from "@/components/three/MetalSheet";
 import { WorktopModel } from "@/components/three/WorktopModel";
@@ -13,21 +13,17 @@ import { useConfiguratorStore } from "@/stores/configurator";
 
 function LoadingFallback() {
   return (
-    <div className="flex h-full items-center justify-center bg-gradient-to-br from-ht-dark/5 to-ht-dark/10">
+    <div className="flex h-full items-center justify-center">
       <div className="text-center">
-        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-ht-gold/30 border-t-ht-gold" />
-        <p className="mt-3 text-sm text-ht-dark/50">Loading 3D preview...</p>
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border border-white/10 border-t-ht-gold-light" />
+        <p className="mt-3 text-xs uppercase tracking-[0.2em] text-white/40">Preparing the studio</p>
       </div>
     </div>
   );
 }
 
-const FOG_COLOR = new THREE.Color("#f5f0eb");
-
-/** Sets the scene background to match fog colour so fog blends naturally */
-function SceneBackground() {
-  return <color attach="background" args={["#f5f0eb"]} />;
-}
+/** Matches the centre of the CSS stage backdrop so fog dissolves into it */
+const FOG_COLOR = new THREE.Color("#2e2822");
 
 /** Animated fog that smoothly fades in/out when textures are loading */
 function SceneFog() {
@@ -47,6 +43,42 @@ function SceneFog() {
   return <fog ref={fogRef} attach="fog" args={[FOG_COLOR, 80, 120]} />;
 }
 
+/**
+ * Pull the camera back on narrow (portrait) stages so the whole piece stays
+ * in frame on phones. Runs when the stage aspect or product changes.
+ */
+function ResponsiveCamera({ isWorktop }: { isWorktop: boolean }) {
+  const camera = useThree((s) => s.camera);
+  const width = useThree((s) => s.size.width);
+  const height = useThree((s) => s.size.height);
+  const controls = useThree((s) => s.controls) as unknown as {
+    target?: THREE.Vector3;
+    update?: () => void;
+  } | null;
+
+  useEffect(() => {
+    const aspect = width / Math.max(height, 1);
+    // Short stages (phones, tablets) carry a proportionally larger caption,
+    // so frame a little wider and aim slightly above centre to sit the
+    // piece lower in the frame, clear of the title.
+    const compact = height < 520;
+    const base = isWorktop
+      ? new THREE.Vector3(4.5, 9.5, 12)
+      : new THREE.Vector3(3.6, 0.4, 15.5);
+    const factor =
+      Math.min(2.4, Math.max(1, 1.55 / aspect)) * (compact ? 1.25 : 1);
+    const lift = compact ? (isWorktop ? 1.6 : 1.4) : 0;
+
+    camera.position.copy(base.multiplyScalar(factor));
+    camera.position.y += lift;
+    controls?.target?.set(0, lift, 0);
+    camera.lookAt(0, lift, 0);
+    controls?.update?.();
+  }, [width, height, isWorktop, camera, controls]);
+
+  return null;
+}
+
 /** HTML overlay spinner shown during texture loading */
 function TextureLoadingOverlay() {
   const isLoading = useConfiguratorStore((s) => s.isTextureLoading);
@@ -62,7 +94,7 @@ function TextureLoadingOverlay() {
           <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-ht-gold/80" />
           <div className="absolute inset-1 animate-spin rounded-full border-2 border-transparent border-b-ht-copper/50" style={{ animationDirection: "reverse", animationDuration: "1.5s" }} />
         </div>
-        <span className="text-xs font-medium text-ht-dark/40">Applying finish...</span>
+        <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/50">Applying finish</span>
       </div>
     </div>
   );
@@ -85,12 +117,12 @@ class ViewerErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-full items-center justify-center bg-ht-dark/5 p-8">
+        <div className="flex h-full items-center justify-center p-8">
           <div className="text-center">
-            <p className="font-serif text-lg font-semibold text-ht-dark">
-              3D Preview Unavailable
+            <p className="font-serif text-xl text-white">
+              3D preview unavailable
             </p>
-            <p className="mt-2 text-sm text-ht-dark/60">
+            <p className="mt-2 max-w-xs text-sm text-white/50">
               Your browser may not support WebGL. Please try a different browser
               or device.
             </p>
@@ -120,9 +152,9 @@ function Scene() {
 
   return (
     <>
-      <SceneBackground />
       <SceneFog />
-      <SceneEnvironment />
+      <ResponsiveCamera isWorktop={isWorktop} />
+      <SceneEnvironment orientation={isWorktop ? "flat" : "upright"} />
       {isWorktop ? (
         <>
           <WorktopModel
@@ -186,13 +218,15 @@ export function ProductViewer() {
         <TextureLoadingOverlay />
         <Canvas
           camera={{
-            position: isWorktop ? [0, 7, 9] : [0, 0, 12],
-            fov: 45,
+            position: isWorktop ? [4.5, 9.5, 12] : [3.6, 0.4, 15.5],
+            fov: 40,
           }}
+          dpr={[1, 2]}
           gl={{
             antialias: true,
-            toneMapping: 3,
-            toneMappingExposure: 1.2,
+            alpha: true,
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.1,
           }}
           className="touch-none"
           fallback={<LoadingFallback />}

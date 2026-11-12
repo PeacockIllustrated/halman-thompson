@@ -143,7 +143,7 @@ function HHandle({ def, gauge }: { def: HDef; gauge: number }) {
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={barArgs} />
         <meshBasicMaterial
-          color={0xb8860b}
+          color={0xc49a4a}
           transparent
           opacity={active ? 1.0 : 0.7}
           side={THREE.DoubleSide}
@@ -153,7 +153,7 @@ function HHandle({ def, gauge }: { def: HDef; gauge: number }) {
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={glowArgs} />
         <meshBasicMaterial
-          color={0xb8860b}
+          color={0xc49a4a}
           transparent
           opacity={active ? 0.25 : 0.08}
           blending={THREE.AdditiveBlending}
@@ -165,7 +165,7 @@ function HHandle({ def, gauge }: { def: HDef; gauge: number }) {
         <mesh key={i} position={a.pos} rotation={a.rot}>
           <coneGeometry args={[ARROW_R, ARROW_H, 6]} />
           <meshBasicMaterial
-            color={0xb8860b}
+            color={0xc49a4a}
             transparent
             opacity={active ? 1.0 : 0.55}
           />
@@ -330,7 +330,7 @@ function VHandle({ def, gauge }: { def: VDef; gauge: number }) {
       <mesh position={[0, barMidY, 0]}>
         <planeGeometry args={[BAR_W, barH]} />
         <meshBasicMaterial
-          color={0xb8860b}
+          color={0xc49a4a}
           transparent
           opacity={active ? 1.0 : 0.7}
           side={THREE.DoubleSide}
@@ -342,7 +342,7 @@ function VHandle({ def, gauge }: { def: VDef; gauge: number }) {
       <mesh position={[0, barMidY, 0]}>
         <planeGeometry args={[BAR_W * 4, barH * 1.2]} />
         <meshBasicMaterial
-          color={0xb8860b}
+          color={0xc49a4a}
           transparent
           opacity={active ? 0.25 : 0.08}
           blending={THREE.AdditiveBlending}
@@ -355,7 +355,7 @@ function VHandle({ def, gauge }: { def: VDef; gauge: number }) {
       <mesh position={[0, upArrowY, 0]}>
         <coneGeometry args={[ARROW_R, ARROW_H, 6]} />
         <meshBasicMaterial
-          color={0xb8860b}
+          color={0xc49a4a}
           transparent
           opacity={active ? 1.0 : 0.55}
         />
@@ -365,7 +365,7 @@ function VHandle({ def, gauge }: { def: VDef; gauge: number }) {
       <mesh position={[0, dnArrowY, 0]} rotation={[Math.PI, 0, 0]}>
         <coneGeometry args={[ARROW_R, ARROW_H, 6]} />
         <meshBasicMaterial
-          color={0xb8860b}
+          color={0xc49a4a}
           transparent
           opacity={active ? 1.0 : 0.55}
         />

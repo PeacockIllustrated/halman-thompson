@@ -77,21 +77,21 @@ export function InstallPrompt() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom duration-500">
       <div className="mx-auto max-w-lg p-4">
-        <div className="rounded-2xl border border-[#b8860b]/20 bg-[#1a1a2e] p-5 shadow-2xl shadow-black/40">
+        <div className="rounded-2xl border border-[#a67c3d]/20 bg-[#1d1a16] p-5 shadow-2xl shadow-black/40">
           <div className="flex items-start gap-4">
             {/* Mini HT logo */}
-            <div className="flex-shrink-0 rounded-xl bg-[#1a1a2e] ring-1 ring-[#b8860b]/30 p-2">
+            <div className="flex-shrink-0 rounded-xl bg-[#1d1a16] ring-1 ring-[#a67c3d]/30 p-2">
               <svg
                 viewBox="0 0 178.85 218.83"
                 className="h-10 w-8"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  fill="#b8860b"
+                  fill="#a67c3d"
                   d="M102.24,14.27l-.16,86.07-25.23.04-.16-86.05-42.74.74c-6.46.11-12.77,1.35-18.62,3.51-7.41,2.57-8.4,9.58-10.55,16.58l-.85,2.77c-.18.6-1.27.96-2,.54-.63-.37-1.19-1.71-1.21-2.92L0,0c10.11,1.92,19.13,3.01,29.42,3l123.76-.06c8.99,0,16.79-1.45,25.67-2.92l-.74,36.55c-.03,1.25-1.67,2.32-2.34,2.06-3.97-1.54,2.6-14.68-12.55-20.14-5.76-2.14-12.02-3.31-18.36-3.43l-42.62-.8Z"
                 />
                 <path
-                  fill="#b8860b"
+                  fill="#a67c3d"
                   d="M127.68,218.83l-37.39-.44-38.96.43c-1.37.02-2.14-1.03-2.19-1.68-.07-.91.79-1.65,2.04-1.77l12.55-1.15c5.9-.54,9.72-4.73,10.78-10.57,1.86-10.23,1.99-20.37,2.04-30.99l.24-58.92,25.29-.08.2,58.98c.04,10.58.24,20.71,2.04,30.96,1.02,5.77,4.76,10.02,10.53,10.58l12.58,1.21c.97.09,1.67.29,2.04.82.52.75.1,2.65-1.8,2.63Z"
                 />
                 <path
@@ -111,7 +111,7 @@ export function InstallPrompt() {
                   Tap{" "}
                   <span className="inline-flex items-center">
                     <svg
-                      className="mx-0.5 h-3.5 w-3.5 text-[#b8860b]"
+                      className="mx-0.5 h-3.5 w-3.5 text-[#a67c3d]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -166,7 +166,7 @@ export function InstallPrompt() {
               </button>
               <button
                 onClick={handleInstall}
-                className="flex-1 rounded-lg bg-[#b8860b] px-4 py-2.5 text-xs font-semibold text-[#1a1a2e] transition-colors hover:bg-[#b8860b]/90"
+                className="flex-1 rounded-lg bg-[#a67c3d] px-4 py-2.5 text-xs font-semibold text-[#1d1a16] transition-colors hover:bg-[#a67c3d]/90"
               >
                 Install App
               </button>

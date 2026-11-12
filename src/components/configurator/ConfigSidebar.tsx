@@ -134,7 +134,7 @@ export function ConfigSidebar() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* ── Mobile / Tablet Tab Bar ─────────────────── */}
-      <div className="flex-shrink-0 border-b border-ht-dark/[0.06] bg-white lg:hidden">
+      <div className="flex-shrink-0 border-b border-ht-dark/[0.08] bg-ht-cream lg:hidden">
         <div className="flex">
           {tabs.map((tab, i) => (
             <button
@@ -166,7 +166,7 @@ export function ConfigSidebar() {
                 className={cn(
                   "absolute right-2 top-2 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[7px] font-bold transition-all duration-250 sm:h-4 sm:w-4 sm:text-[8px]",
                   activeTab === tab.id
-                    ? "bg-ht-gold text-white"
+                    ? "bg-ht-dark text-white"
                     : "bg-ht-dark/[0.06] text-ht-dark/25"
                 )}
               >
@@ -179,7 +179,7 @@ export function ConfigSidebar() {
 
       {/* ── Scrollable Content Area ─────────────────── */}
       <div ref={scrollRef} className="scrollbar-thin flex-1 overflow-y-auto overscroll-contain">
-        <div className="space-y-6 p-5 sm:p-6">
+        <div className="space-y-8 p-5 sm:p-7 lg:divide-y lg:divide-ht-dark/[0.08] lg:[&>*:not(:first-child)]:pt-8">
           {/* Material tab */}
           <TabPanel active={activeTab === "material"}>
             <FinishSelector />
@@ -206,35 +206,36 @@ export function ConfigSidebar() {
       </div>
 
       {/* ── Sticky Bottom Bar ───────────────────────── */}
-      <div className="flex-shrink-0 border-t border-ht-dark/[0.06] bg-white/95 px-5 py-3.5 shadow-[0_-1px_12px_rgba(0,0,0,0.04)] backdrop-blur-sm sm:px-6 sm:py-4">
-        <div className="flex items-center gap-3 lg:block">
-          {/* Mini price — mobile/tablet only */}
-          <div className="min-w-0 flex-shrink-0 lg:hidden">
+      <div className="flex-shrink-0 border-t border-ht-dark/[0.08] bg-ht-cream/95 px-5 py-4 backdrop-blur-sm sm:px-7">
+        <div className="flex items-center gap-4">
+          {/* Running total */}
+          <div className="min-w-0 flex-shrink-0">
             {isPriceLoading ? (
               <div className="h-6 w-20 animate-pulse rounded bg-ht-dark/10" />
             ) : calculatedPrice !== null ? (
               <div className="leading-tight">
-                <span className="font-serif text-lg font-bold text-ht-dark sm:text-xl">
-                  £{calculatedPrice.toFixed(2)}
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-ht-dark/40">Total inc. VAT</p>
+                <span className="font-serif text-xl tabular-nums text-ht-dark sm:text-2xl">
+                  £{calculatedPrice.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <p className="text-[9px] text-ht-dark/40">inc. VAT</p>
               </div>
             ) : (
-              <span className="text-[11px] text-ht-dark/40">No price yet</span>
+              <span className="text-[11px] leading-tight text-ht-dark/40">Choose a finish<br />to see a price</span>
             )}
           </div>
 
           {/* CTA button */}
-          <div className="flex-1 lg:flex-none">
+          <div className="flex-1">
             {selectedFinish && calculatedPrice ? (
               <Link href="/quote" className="block">
-                <Button size="lg" className="w-full text-sm lg:text-base">
-                  Request Quote
+                <Button variant="secondary" size="lg" className="group w-full">
+                  Request a quote
+                  <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
                 </Button>
               </Link>
             ) : (
-              <Button size="lg" className="w-full text-sm lg:text-base" disabled>
-                Select a finish
+              <Button variant="secondary" size="lg" className="w-full" disabled>
+                Request a quote
               </Button>
             )}
           </div>

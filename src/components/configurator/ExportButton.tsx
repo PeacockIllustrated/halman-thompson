@@ -43,7 +43,7 @@ export function ExportButton() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-xl bg-white/80 px-4 py-2 text-sm font-medium text-ht-dark shadow-lg shadow-black/[0.08] ring-1 ring-black/[0.06] backdrop-blur-md transition-all duration-200 hover:bg-white hover:shadow-xl active:scale-[0.97]"
+        className="flex items-center gap-2 rounded-full bg-black/35 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-black/30 ring-1 ring-white/10 backdrop-blur-xl transition-all duration-200 hover:bg-black/50 active:scale-[0.97]"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M8 1v9M4.5 7.5 8 10l3.5-2.5" />

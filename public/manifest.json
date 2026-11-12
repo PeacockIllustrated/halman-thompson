@@ -4,8 +4,8 @@
   "description": "Configure your bespoke copper, brass, and zinc splashbacks, worktops, and signage with our interactive 3D visualiser.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#1a1a2e",
+  "background_color": "#1d1a16",
+  "theme_color": "#1d1a16",
   "orientation": "any",
   "categories": ["shopping", "design"],
   "icons": [

@@ -34,20 +34,20 @@ export function PriceDisplay() {
 
   if (!selectedFinish) {
     return (
-      <div className="rounded-xl border border-ht-dark/[0.06] bg-gradient-to-br from-white to-ht-gold/[0.02] p-5">
+      <div className="rounded-2xl border border-ht-dark/[0.07] bg-white/70 p-5">
         <p className="text-sm text-ht-dark/40">Select a finish to see pricing</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-ht-dark/[0.06] bg-gradient-to-br from-white to-ht-gold/[0.02] p-5">
+    <div className="rounded-2xl border border-ht-dark/[0.07] bg-white/70 p-5">
       <div className="flex items-baseline justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-ht-dark/45">Total Price</span>
         {isPriceLoading ? (
           <div className="h-8 w-24 animate-pulse rounded-lg bg-ht-dark/[0.06]" />
         ) : (
-          <span className="font-serif text-3xl font-bold tracking-tight text-ht-dark">
+          <span className="font-serif text-[34px] leading-none tracking-tight text-ht-dark">
             {calculatedPrice !== null ? `£${calculatedPrice.toFixed(2)}` : "—"}
           </span>
         )}
