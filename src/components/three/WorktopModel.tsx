@@ -675,7 +675,7 @@ function DraggableSplitLine({
     if (!splitMeta) return null;
     const geo = new THREE.BufferGeometry().setFromPoints(splitMeta.points);
     const mat = new THREE.LineDashedMaterial({
-      color: 0xb8860b,
+      color: 0xc49a4a,
       dashSize: 0.12,
       gapSize: 0.04,
       opacity: 0.7,
@@ -695,7 +695,7 @@ function DraggableSplitLine({
       <mesh position={splitMeta.mid} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[splitMeta.planeW, splitMeta.planeH]} />
         <meshBasicMaterial
-          color={0xb8860b}
+          color={0xc49a4a}
           transparent
           opacity={0.12}
           blending={THREE.AdditiveBlending}

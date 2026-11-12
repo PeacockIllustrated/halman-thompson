@@ -119,7 +119,7 @@ export function WorktopOptions() {
     <div className="space-y-5">
       {/* ── Edge Profile ─────────────────────────── */}
       <div className="space-y-3">
-        <h3 className="font-serif text-lg font-semibold tracking-wide">Edge Profile</h3>
+        <h3 className="font-serif text-[22px] leading-tight text-ht-dark">Edge profile</h3>
         <Slider
           label="Corner Radius"
           value={config.cornerRadius}
@@ -256,7 +256,7 @@ export function WorktopOptions() {
       {/* ── Flat Sheet Info ──────────────────────── */}
       {flatSheet && (
         <div className="rounded-xl border border-ht-dark/[0.06] p-3.5 space-y-1">
-          <h3 className="font-serif text-lg font-semibold tracking-wide">Flat Sheet</h3>
+          <h3 className="font-serif text-[22px] leading-tight text-ht-dark">Flat sheet</h3>
           <p className="text-sm text-ht-dark/60">
             {flatSheet.totalWidth}mm &times; {flatSheet.totalHeight}mm
           </p>
@@ -273,7 +273,7 @@ export function WorktopOptions() {
 
       {/* ── Sink Cutout ──────────────────────────── */}
       <div className="space-y-3">
-        <h3 className="font-serif text-lg font-semibold tracking-wide">Sink Cutout</h3>
+        <h3 className="font-serif text-[22px] leading-tight text-ht-dark">Sink cut-out</h3>
         <div className="rounded-xl border border-ht-dark/[0.06] p-3.5">
           <Toggle
             label="Add Sink Cutout"

@@ -15,8 +15,8 @@ export function ConfigSummary() {
 
   return (
     <div className="space-y-3">
-      <h3 className="font-serif text-lg font-semibold tracking-wide">Your Configuration</h3>
-      <div className="space-y-2 rounded-xl border border-ht-dark/[0.06] bg-gradient-to-br from-white to-ht-dark/[0.01] p-4 text-sm">
+      <h3 className="font-serif text-[22px] leading-tight text-ht-dark">Your piece</h3>
+      <div className="space-y-2 rounded-2xl border border-ht-dark/[0.07] bg-white/70 p-4 text-sm">
         <SummaryRow label="Product" value={productType.replace(/_/g, " ")} />
         <SummaryRow label="Finish" value={selectedFinish?.name ?? "Not selected"} />
         <SummaryRow label="Width" value={`${width}mm`} />

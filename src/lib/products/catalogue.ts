@@ -30,6 +30,7 @@ export const PRODUCT_TYPES: ProductTypeConfig[] = [
     hasTextInput: false,
     hasLogoUpload: false,
     modelType: "flat_sheet",
+    defaultFinishSlug: "northumberland",
     sortOrder: 1,
     isActive: true,
     phase: 1,

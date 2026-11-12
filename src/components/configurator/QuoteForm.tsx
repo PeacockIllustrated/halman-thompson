@@ -141,7 +141,7 @@ export function QuoteForm() {
   if (isSubmitted) {
     return (
       <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
-        <p className="font-serif text-xl font-semibold text-green-800">
+        <p className="font-serif text-2xl text-green-800">
           Quote Request Sent
         </p>
         <p className="mt-2 text-sm text-green-700">
@@ -157,7 +157,7 @@ export function QuoteForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h3 className="font-serif text-lg font-semibold">Your Details</h3>
+      <h3 className="font-serif text-[22px] leading-tight text-ht-dark">Your details</h3>
 
       <Input
         label="Full Name"

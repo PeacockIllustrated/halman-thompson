@@ -39,18 +39,18 @@ export function SplashScreen() {
         >
           <defs>
             <linearGradient id="splash-gold" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#b8860b" />
+              <stop offset="0%" stopColor="#a67c3d" />
               <stop offset="50%" stopColor="#d4a841" />
               <stop offset="100%" stopColor="#b87333" />
             </linearGradient>
             <linearGradient id="splash-shimmer" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#b8860b" stopOpacity="0">
+              <stop offset="0%" stopColor="#a67c3d" stopOpacity="0">
                 <animate attributeName="offset" values="-0.5;1.5" dur="2s" repeatCount="1" />
               </stop>
               <stop offset="15%" stopColor="#f0d890" stopOpacity="0.6">
                 <animate attributeName="offset" values="-0.35;1.65" dur="2s" repeatCount="1" />
               </stop>
-              <stop offset="30%" stopColor="#b8860b" stopOpacity="0">
+              <stop offset="30%" stopColor="#a67c3d" stopOpacity="0">
                 <animate attributeName="offset" values="-0.2;1.8" dur="2s" repeatCount="1" />
               </stop>
             </linearGradient>

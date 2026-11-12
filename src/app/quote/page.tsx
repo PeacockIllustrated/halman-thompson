@@ -32,8 +32,8 @@ export default function QuotePage() {
           &larr; Back to configurator
         </Link>
 
-        <h1 className="font-serif text-3xl font-bold text-ht-dark">
-          Quote Summary
+        <h1 className="font-serif text-4xl text-ht-dark">
+          Your quote
         </h1>
 
         {!hasConfig ? (
@@ -50,7 +50,7 @@ export default function QuotePage() {
           <div className="mt-8 grid gap-8 lg:grid-cols-2">
             {/* Configuration Summary */}
             <div className="rounded-xl border border-ht-dark/10 bg-white p-6">
-              <h2 className="font-serif text-xl font-semibold">
+              <h2 className="font-serif text-2xl">
                 Your {productType.replace(/_/g, " ")}
               </h2>
 
@@ -70,7 +70,7 @@ export default function QuotePage() {
                 <div className="mt-6 border-t border-ht-dark/10 pt-4">
                   <div className="flex items-baseline justify-between">
                     <span className="text-sm text-ht-dark/60">Estimated Total</span>
-                    <span className="font-serif text-2xl font-bold text-ht-dark">
+                    <span className="font-serif text-3xl text-ht-dark">
                       £{calculatedPrice.toFixed(2)}
                     </span>
                   </div>

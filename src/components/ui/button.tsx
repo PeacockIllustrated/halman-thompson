@@ -14,17 +14,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ht-gold/50 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-40",
+          "inline-flex items-center justify-center rounded-full font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ht-gold/50 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-40",
           {
             "bg-ht-gold text-white shadow-sm hover:bg-ht-gold/90 hover:shadow-md active:scale-[0.98]": variant === "primary",
-            "bg-ht-dark text-white shadow-sm hover:bg-ht-dark/90 hover:shadow-md active:scale-[0.98]": variant === "secondary",
+            "bg-ht-dark text-white shadow-[0_10px_24px_-12px_rgba(29,26,22,0.8)] hover:bg-ht-bronze active:scale-[0.98]": variant === "secondary",
             "border border-ht-dark/[0.08] text-ht-dark hover:bg-ht-dark/[0.04] active:scale-[0.98]": variant === "outline",
             "text-ht-dark hover:bg-ht-dark/[0.04]": variant === "ghost",
           },
           {
             "h-8 px-3.5 text-sm": size === "sm",
             "h-10 px-5 text-sm": size === "md",
-            "h-12 px-6 text-[15px] font-semibold tracking-wide": size === "lg",
+            "h-12 px-6 text-[14px] tracking-wide": size === "lg",
           },
           className
         )}

@@ -136,17 +136,21 @@ Price = f(metal_type, finish_complexity, area_mm2, thickness, product_type_labou
 ## Brand & Design Guidelines
 
 ### Colours
-- **Primary dark:** `#1a1a2e` (near-black navy)
-- **Gold accent:** `#b8860b` (dark goldenrod — matches HT's logo)
-- **Copper accent:** `#b87333`
-- **Brass accent:** `#cd9b1d`
-- **Zinc accent:** `#8a8d8f`
-- **Warm background:** `#faf7f2` (cream)
+Tuned to halmanthompson.com's warm stone/bronze palette (tokens in `src/app/globals.css`):
+- **Forge ink (`ht-dark`):** `#1d1a16` — warm near-black, primary dark
+- **Ink raised (`ht-ink`):** `#2a2520`
+- **Bronze (`ht-bronze`):** `#464038` — HT site bronze-grey
+- **Aged brass (`ht-gold`):** `#a67c3d` — accent
+- **Polished brass (`ht-gold-light`):** `#d6b278` — highlights / CTAs on dark
+- **Copper / Brass / Verdigris / Zinc accents:** `#b4693e` / `#c49a4a` / `#6f9a8d` / `#8a8d8f`
+- **Paper (`ht-cream`):** `#f5f1ea` — warm background
+- **Stone (`ht-stone`):** `#e9e4de` — HT site stone
 - **Onesign teal:** `#4e7e8c` (our brand — used sparingly in admin/internal)
 
 ### Typography
-- Headings: Serif or elegant display face (the brand is premium/artisan)
-- Body: Clean sans-serif for readability in the configurator UI
+- Same pairing as halmanthompson.com, loaded via `next/font/google`
+- Headings: **Playfair Display** (`font-serif`), italics for emphasis
+- Body/UI: **Plus Jakarta Sans** (`font-sans`)
 - The feel should be: premium, handcrafted, warm — NOT clinical or tech-startup
 
 ### Design Tone

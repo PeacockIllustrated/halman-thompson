@@ -45,7 +45,7 @@ export function DimensionControls() {
 
   return (
     <div className="space-y-5">
-      <h3 className="font-serif text-lg font-semibold tracking-wide">Dimensions</h3>
+      <h3 className="font-serif text-[22px] leading-tight text-ht-dark">Dimensions</h3>
 
       <div className="space-y-2">
         <Slider

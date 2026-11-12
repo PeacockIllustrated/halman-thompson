@@ -95,13 +95,13 @@ export function CutoutShapeSelector() {
   };
 
   return (
-    <div className="flex items-center gap-1 rounded-lg sm:rounded-xl bg-white/80 p-0.5 sm:p-1 shadow-lg shadow-black/[0.08] ring-1 ring-black/[0.06] backdrop-blur-md transition-all duration-250">
+    <div className="flex items-center gap-1 rounded-lg sm:rounded-xl bg-black/35 p-0.5 sm:p-1 shadow-lg shadow-black/30 ring-1 ring-white/10 backdrop-blur-xl transition-all duration-250">
       {/* Add / remove cutout toggle */}
       <button
         type="button"
         onClick={toggleCutout}
         title={cutoutEnabled ? "Remove cutout" : "Add cutout"}
-        className="flex items-center justify-center rounded-md sm:rounded-lg px-2 py-1.5 bg-ht-gold text-white shadow-sm transition-all duration-200"
+        className="flex items-center justify-center rounded-md sm:rounded-lg px-2 py-1.5 bg-ht-gold-light text-ht-dark shadow-sm transition-all duration-200"
       >
         <svg
           width="20" height="20" viewBox="0 0 20 20" fill="none"
@@ -119,7 +119,7 @@ export function CutoutShapeSelector() {
       {showShapes && (
         <>
           <div
-            className="h-5 w-px bg-black/10 transition-all duration-200"
+            className="h-5 w-px bg-white/15 transition-all duration-200"
             style={{
               opacity: animIn ? 1 : 0,
               marginLeft: animIn ? 2 : 0,
@@ -136,8 +136,8 @@ export function CutoutShapeSelector() {
                 title={s.label}
                 className={`flex items-center justify-center rounded-md sm:rounded-lg py-1.5 transition-all duration-200 ${
                   isActive
-                    ? "bg-ht-dark text-white shadow-sm"
-                    : "text-ht-dark/40 hover:text-ht-dark/70"
+                    ? "bg-white/15 text-white shadow-sm"
+                    : "text-white/45 hover:text-white/80"
                 }`}
                 style={{
                   opacity: animIn ? 1 : 0,

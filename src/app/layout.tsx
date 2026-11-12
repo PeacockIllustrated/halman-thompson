@@ -1,35 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
-import localFont from "next/font/local";
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { SplashScreen } from "@/components/layout/SplashScreen";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import "./globals.css";
 
-const inter = Inter({
+// Same pairing as halmanthompson.com
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-jakarta",
+  display: "swap",
 });
 
-const cinzel = localFont({
-  src: [
-    {
-      path: "../assets/fonts/cinzel/Cinzel-Regular.otf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../assets/fonts/cinzel/Cinzel-Bold.otf",
-      weight: "700",
-      style: "normal",
-    },
-  ],
-  variable: "--font-serif",
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
   display: "swap",
 });
 
 export const viewport: Viewport = {
-  themeColor: "#1a1a2e",
+  themeColor: "#1d1a16",
   width: "device-width",
   initialScale: 1,
 };
@@ -55,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${cinzel.variable}`}>
+    <html lang="en" className={`${jakarta.variable} ${playfair.variable}`}>
       <body className="min-h-screen bg-ht-cream text-ht-dark antialiased">
         <SplashScreen />
         <PageTransition>{children}</PageTransition>

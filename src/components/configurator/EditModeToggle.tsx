@@ -13,10 +13,10 @@ export function EditModeToggle() {
     <button
       type="button"
       onClick={() => setEditMode(!editMode)}
-      className={`flex items-center gap-1.5 rounded-lg sm:rounded-xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-xs sm:text-sm font-medium shadow-lg shadow-black/[0.08] ring-1 ring-black/[0.06] backdrop-blur-md transition-all duration-200 ${
+      className={`flex items-center gap-1.5 rounded-lg sm:rounded-xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-xs sm:text-sm font-medium shadow-lg shadow-black/30 ring-1 ring-white/10 backdrop-blur-xl transition-all duration-200 ${
         editMode
-          ? "bg-ht-dark text-white ring-ht-gold/30"
-          : "bg-white/80 text-ht-dark/50 hover:text-ht-dark/70"
+          ? "bg-ht-gold-light text-ht-dark"
+          : "bg-black/35 text-white/60 hover:text-white"
       }`}
       title={editMode ? "Exit dimension editing" : "Edit dimensions on canvas"}
     >

@@ -45,7 +45,7 @@ export function DimensionLabels({
   return (
     <group>
       <Html position={positions.width} center style={{ pointerEvents: "none" }}>
-        <div className="whitespace-nowrap rounded bg-ht-dark/80 px-2 py-0.5 text-xs font-medium tabular-nums text-white">
+        <div className="whitespace-nowrap rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[11px] font-medium tabular-nums text-white/90 backdrop-blur-md">
           {width}mm
         </div>
       </Html>
@@ -54,8 +54,8 @@ export function DimensionLabels({
         center
         style={{ pointerEvents: "none" }}
       >
-        <div className="whitespace-nowrap rounded bg-ht-dark/80 px-2 py-0.5 text-xs font-medium tabular-nums text-white">
-          <span className="mr-1 text-white/60">{heightLabel}</span>
+        <div className="whitespace-nowrap rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[11px] font-medium tabular-nums text-white/90 backdrop-blur-md">
+          <span className="mr-1 text-white/50">{heightLabel}</span>
           {height}mm
         </div>
       </Html>
