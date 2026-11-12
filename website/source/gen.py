@@ -132,7 +132,7 @@ def wall(groups=None, limit=None):
         if groups and key not in groups: continue
         fs = [f for f in FIN if f['metal'] == key][:limit] if limit else [f for f in FIN if f['metal'] == key]
         out.append(f'<div class="wall-group" id="{key.lower()}"><div class="wall-head"><h3 class="d4">{title}</h3><span class="label">{sym} · {len([f for f in FIN if f["metal"]==key])} finishes</span></div>'
-                   f'<div class="wall">{"".join(swatch_tile(f) for f in fs)}</div></div>')
+                   f'<div class="wall" style="--n:{max(len(fs),5)}">{"".join(swatch_tile(f) for f in fs)}</div></div>')
     return ''.join(out)
 
 # ---------------- links ----------------
@@ -160,12 +160,12 @@ def link(href):
 # ---------------- shell ----------------
 NAV = [('finishes', 'Finishes'), ('samples', 'Samples'), ('products', 'Products'), ('shop', 'Shop'),
        ('our-work', 'Our work'), ('bespoke', 'Bespoke'), ('about', 'About'), ('journal', 'Journal')]
-FONTS = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital@1&family=Schibsted+Grotesk:wght@400;500;600&display=swap'
+FONTS = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap'
 
 def head(title, desc, fragment=False):
     t = f'<title>{esc(title)}</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n'
     t += f'<meta name="description" content="{esc(desc)}">\n' if desc else ''
-    t += f'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link rel="stylesheet" href="{FONTS}">\n<link rel="stylesheet" href="site.css">\n'
+    t += f'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link rel="stylesheet" href="{FONTS}">\n<link rel="stylesheet" href="site.css">\n<link rel="icon" href="brand/ht-icon.svg">\n'
     if fragment: return t
     return ('<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
             + t + '</head>\n<body>\n')
@@ -174,9 +174,9 @@ def header(active):
     nav = ''.join(f'<a href="{k}.html"{" aria-current=page" if k == active else ""}>{v}</a>' for k, v in NAV)
     panel = ''.join(f'<a href="{k}.html">{v}</a>' for k, v in NAV)
     return f'''<a class="skip" href="#main">Skip to content</a>
-<div class="top"><div class="wrap"><span>Hand-finished in Newcastle upon Tyne · Samples from £26.34</span><span>{PHONE} · {EMAIL}</span></div></div>
+<div class="top"><div class="wrap"><span>Hand-finished in Newcastle upon Tyne</span><span>Samples from £26.34 · UK-made, shipped worldwide</span><span><a href="tel:01912509853">{PHONE}</a></span></div></div>
 <header class="hdr"><div class="wrap">
-<a class="brand" href="index.html"><b>Halman Thompson</b><span>Bespoke metal creations</span></a>
+<a class="brand" href="index.html"><img src="brand/halman-logo.svg" alt="Halman Thompson, bespoke metal creations" width="177" height="54"></a>
 <nav class="nav" aria-label="Main">{nav}</nav>
 <a class="btn btn-v" href="samples.html">Order samples</a>
 <details class="menu"><summary>Menu</summary><div class="panel">{panel}<a class="btn btn-v" href="samples.html">Order samples</a></div></details>
@@ -184,23 +184,23 @@ def header(active):
 <main id="main">'''
 
 def cta_band():
-    return f'''<section class="steel band"><div class="wrap g7">
-<div class="rail"><span class="label">Bespoke quote</span></div>
-<div class="body" style="display:grid;gap:28px">
+    return f'''<section class="steel split">
+<div class="im">{imgtag("Patina-Brass-Sheet-for-Shelf-Display-scaled.jpg", "Plum sitting room with aged brass lining the shelving alcove", 1600)}</div>
+<div class="tx"><img class="mono-mark" src="brand/ht-icon-white.svg" alt="" width="44" height="55"><span class="label" style="color:var(--verdigris-light)">Bespoke quote</span>
 <h2 class="d2">If you can dream it, we&rsquo;ll make it.</h2>
 <p class="lede">Bars, balustrades, staircases, worktops, cladding and pieces that don&rsquo;t have a name yet. Our designers and craftspeople work in brass, copper, zinc and steel, and alongside wood.</p>
 <div class="btnrow"><a class="btn btn-v" href="bespoke.html">Get a bespoke quote</a><a class="btn" href="samples.html">Order samples first</a></div>
-</div></div></section>'''
+</div></section>'''
 
 def footer():
     return f'''</main>
 <footer class="ftr band"><div class="wrap">
 <div class="g7">
-<div class="rail" style="display:grid;gap:16px;align-content:start"><h2 class="d4">Halman Thompson</h2><p>Bespoke brass, copper, zinc and steel, aged by hand and made to order.</p><div class="tagstack">{tag("CuZn")}{tag("Cu")}{tag("Zn")}{tag("Fe")}</div></div>
+<div class="rail" style="display:grid;gap:20px;align-content:start"><img class="flogo" src="brand/halman-logo-light.svg" alt="Halman Thompson" width="220" height="67"><p>Bespoke brass, copper, zinc and steel, aged by hand and made to order in Newcastle upon Tyne.</p><div class="tagstack">{tag("CuZn")}{tag("Cu")}{tag("Zn")}{tag("Fe")}</div></div>
 <div class="fcols">
-<div><p class="label" style="margin-bottom:14px">Workshop</p><p>{ADDRESS}</p><p style="margin-top:12px" class="mono">{PHONE}<br>{EMAIL}</p></div>
-<div><p class="label" style="margin-bottom:14px">Explore</p><ul><li><a href="finishes.html">Finishes</a></li><li><a href="samples.html">Samples</a></li><li><a href="products.html">Products</a></li><li><a href="shop.html">Shop</a></li><li><a href="our-work.html">Our work</a></li><li><a href="journal.html">Journal</a></li></ul></div>
-<div><p class="label" style="margin-bottom:14px">Help</p><ul><li><a href="aged-metal-care-guide.html">Care guide</a></li><li><a href="delivery.html">Delivery</a></li><li><a href="returns.html">Returns</a></li><li><a href="terms-and-conditions.html">Terms and conditions</a></li><li><a href="privacy-policy.html">Privacy policy</a></li><li><a href="contact-us.html">Contact us</a></li></ul></div>
+<div><p class="label" style="margin-bottom:14px;color:var(--verdigris-light)">Workshop</p><p>{ADDRESS}</p><p style="margin-top:12px" class="mono">{PHONE}<br>{EMAIL}</p></div>
+<div><p class="label" style="margin-bottom:14px;color:var(--verdigris-light)">Explore</p><ul><li><a href="finishes.html">Finishes</a></li><li><a href="samples.html">Samples</a></li><li><a href="products.html">Products</a></li><li><a href="shop.html">Shop</a></li><li><a href="our-work.html">Our work</a></li><li><a href="journal.html">Journal</a></li></ul></div>
+<div><p class="label" style="margin-bottom:14px;color:var(--verdigris-light)">Help</p><ul><li><a href="aged-metal-care-guide.html">Care guide</a></li><li><a href="delivery.html">Delivery</a></li><li><a href="returns.html">Returns</a></li><li><a href="terms-and-conditions.html">Terms and conditions</a></li><li><a href="privacy-policy.html">Privacy policy</a></li><li><a href="contact-us.html">Contact us</a></li></ul></div>
 </div></div>
 <div class="fbase"><span>© Halman Thompson</span><span>UK-made · International delivery available</span></div>
 </div></footer>
@@ -208,7 +208,14 @@ def footer():
 '''
 
 PAGES = {}
+BANNERS = {'finishes': 'Berkshire-Bronzed-Kitchen-Splashback-scaled.png', 'samples': 'navy.jpg',
+           'products': 'The-Publisher-Hotel-Aged-Brass-Reception-Desk-scaled.jpg', 'shop': 'metal-coasters-somerset-2048x1365.jpg',
+           'our-work': 'Tattersalls009-1-2048x1356.jpg', 'journal': 'Decorative-Copper-Sheet-Behind-Wine-Rack-scaled.jpg',
+           'about': 'Aged-Copper-Kitchen-Counter-Top-scaled.jpg', 'bespoke': 'Aged-Brass-Sheet-as-Cupboard-Decoration-scaled.jpg',
+           'contact-us': 'Copper-Backsplash-Behind-Hob-Burners-in-White-Kitchen-2048x1356.jpg', 'bespoke-quote-for-businesses': 'The-Publisher-Hotel-Aged-Brass-Reception-Desk-scaled.jpg'}
 def page(slug, title, desc, active, body, fragment=False):
+    if slug in BANNERS and '<section class="ph-head">' in body:
+        body = body.replace('<section class="ph-head">', f'<section class="ph-head ph-banner" style="--bg:url({img(BANNERS[slug], 2200)})">', 1)
     doc = head(title, desc, fragment) + header(active) + body + footer() + ('' if fragment else '</body>\n</html>\n')
     PAGES[slug] = doc
 
@@ -469,7 +476,7 @@ def index_rows(items):
 
 def steps():
     return f'''<section class="steel band"><div class="wrap">
-<div class="g7" style="margin-bottom:clamp(40px,5vw,72px)"><div class="rail"><span class="label">How it works</span></div><div class="body"><h2 class="d2">From a 150mm square to a finished wall.</h2></div></div>
+<div class="shead"><div class="h"><span class="label" style="color:var(--verdigris-light)">How it works</span><h2 class="d2">From a 150mm square to a finished wall</h2></div></div>
 <ol class="steps" style="list-style:none;margin:0;padding:0">
 <li class="step"><span class="n">1 · Sample</span><h3>See it in your own light</h3><p>Every sample is a 150 × 150mm piece of 0.9mm metal, finished by hand.</p><p class="mono">£26.34 · 2–3 working days</p></li>
 <li class="step"><span class="n">2 · Measure</span><h3>Send us your sizes</h3><p>We cut to the millimetre, with cut-outs for sockets and pipes on request.</p><p class="mono">0.9mm or 1.5mm sheet</p></li>
@@ -478,54 +485,77 @@ def steps():
 </ol></div></section>'''
 
 # ---------------- pages ----------------
+MOSAIC = [('Splashbacks', 'products__splashbacks', 'Aged-Brass-Backsplash-scaled.jpg', 'Aged brass splashback in a white kitchen'),
+          ('Bar tops', 'products__bar-tops', 'The-Publisher-Hotel-Aged-Brass-Reception-Desk-scaled.jpg', 'Aged brass reception desk at The Publisher hotel'),
+          ('Worktops', 'products__worktops', 'Wood-and-Copper-Worktop-scaled.jpg', 'Aged copper worktop with verdigris beside walnut'),
+          ('Table tops', 'products__table-tops', 'metal-coffee-table-1-1600x1067.jpg', 'Aged brass coffee table in a sitting room'),
+          ('Wall panels', 'metal-wall-panels', 'aged-copper-feature-wall-cheshire-finish.jpeg', 'Aged copper feature wall'),
+          ('Bath panels', 'metal-bath-panels', 'aged-copper-bath-panels-northumberland-finish-scaled.jpeg', 'Copper bath panel with verdigris')]
+
+def mosaic():
+    out = []
+    for k, (label, slug, im, alt) in enumerate(MOSAIC, 1):
+        href = slug + '.html' if (slug in P or slug in SPECIAL.values()) else 'products.html'
+        out.append(f'<a class="mo m{k}" href="{href}">{imgtag(im, alt, 1400 if k == 1 else 900)}<span><b>{esc(label)}</b><i>Explore →</i></span></a>')
+    return '<div class="mosaic">' + ''.join(out) + '</div>'
+
 def build_home():
-    feat = [FIN_BY[s] for s in ('finish__northumberland-finish', 'finish__somerset-finish', 'finish__cambridgeshire-finish', 'finish__antique-zinc', 'finish__weathered-corten')]
     proj = PROJECTS[:2]
     best = [x for x in PRODUCTS if x['slug'] in ('product__aged-brass-coffee-table', 'product__northumberland-finish', 'product__somerset-finish-stained-glass-brass', 'product__blackened-corton')]
     posts = POSTS[:4]
     body = f'''
-<section class="hero"><div class="wrap g7">
-<div class="rail hero-rail"><div class="tagstack">{tag("CuZn")}{tag("Cu")}{tag("Zn")}{tag("Fe")}</div><p class="label">{len(FIN)} finishes<br>in four metals</p></div>
-<h1 class="d1">Brass, copper and zinc, aged by hand for the room you&rsquo;re making.</h1>
-<div class="hero-meta"><p class="lede">Splashbacks, worktops, tables and wall panels, cut to your size and finished to order in our Newcastle upon Tyne workshop.</p><div class="btnrow"><a class="btn btn-v" href="samples.html">Order samples · £26.34</a><a class="btn" href="finishes.html">See the finishes</a></div></div>
-<figure class="hero-img wipe" style="margin-bottom:0">{imgtag("HT-cream-kitchen-brass-splashback-island.jpg", "Cream kitchen with an aged brass splashback behind the hob", 2000, eager=True)}<figcaption>Somerset aged brass splashback</figcaption></figure>
+<section class="hero">
+<figure class="hero-img">{imgtag("Copper-Splashback-with-Plug-Socket-Cutouts-scaled.jpg", "White kitchen with a full-width aged copper splashback behind the hob", 2400, eager=True)}<figcaption>Aged copper splashback, cut to fit</figcaption></figure>
+<div class="hero-copy"><div class="wrap">
+<div><span class="kicker">Made in Britain · Newcastle upon Tyne</span><h1 class="caps">Bespoke metal,<br>aged by hand</h1><p class="lede">Splashbacks, worktops, tables and wall panels in brass, copper, zinc and steel, cut to your size and finished to order in our workshop.</p></div>
+<div class="btnrow"><a class="btn btn-v" href="samples.html">Order samples</a><a class="btn" href="finishes.html">Explore finishes</a></div>
+</div></div>
+</section>
+<section class="facts"><div class="wrap">
+<div><b>{len(FIN)} finishes</b><span>Brass, copper, zinc and steel</span></div>
+<div><b>Samples £26.34</b><span>150 × 150mm, in 2–3 days</span></div>
+<div><b>Cut to the millimetre</b><span>Cut-outs for sockets and pipes</span></div>
+<div><b>Made in 5–8 weeks</b><span>Delivered UK-wide and abroad</span></div>
 </div></section>
 
-<section class="band" id="finishes"><div class="wrap">
-<div class="g7" style="margin-bottom:clamp(40px,5vw,64px);row-gap:20px">
-<div class="rail"><span class="label">The finishes</span></div>
-<div class="body" style="display:grid;gap:20px"><h2 class="d2">Every finish is made by hand, so no two sheets are the same.</h2><p class="lede">We age brass, copper, zinc and steel with heat, chemistry and time, then seal the surface so it stays the way you chose it. Start with the metal, then find the finish.</p>
-<nav class="tabs" aria-label="Metals">{"".join(f'<a href="#{k.lower()}">{t} <span class="muted mono">{s}</span></a>' for k,t,s,_ in GROUPS)}</nav></div>
-</div>
+<section class="band"><div class="wrap">
+<div class="shead"><div class="h"><span class="label">What we make</span><h2 class="d2">Beautiful metalwork for exceptional spaces</h2></div><a class="more" href="products.html">All products</a></div>
+{mosaic()}
+</div></section>
+
+<section class="band tint" id="finishes"><div class="wrap">
+<div class="shead"><div class="h"><span class="label">Metal finishes</span><h2 class="d2">Every finish is made by hand, so no two sheets are the same</h2><p class="lede">We age brass, copper, zinc and steel with heat, chemistry and time, then seal the surface so it stays the way you chose it.</p></div>
+<nav class="tabs" aria-label="Metals">{"".join(f'<a href="#{k.lower()}">{t}</a>' for k,t,s,_ in GROUPS)}</nav></div>
 {wall()}
 </div></section>
+
+<section class="split" style="background:var(--sand)">
+<div class="im">{imgtag("Berkshire-Bronzed-3.jpg", "A Berkshire bronzed brass sample sheet", 1400)}</div>
+<div class="tx"><span class="label">Samples</span><h2 class="d2">See it in your own light first</h2>
+<p class="lede">Every finish changes with the room it lives in. Order a 150 × 150mm sample of 0.9mm sheet, finished by hand exactly as your piece will be, and hold it up against your worktop, tiles and paint.</p>
+<dl class="spec" style="max-width:460px"><dt>Size</dt><dd>150 × 150mm, 0.9mm</dd><dt>Lacquer</dt><dd>Gloss or matte</dd><dt>Delivery</dt><dd>2–3 working days</dd></dl>
+<div class="btnrow"><a class="btn btn-v" href="samples.html">Order samples · £26.34</a></div></div>
+</section>
 
 {steps()}
 
 <section class="band"><div class="wrap">
-<div class="g7" style="margin-bottom:40px"><div class="rail"><span class="label">Products</span></div><div class="body"><h2 class="d2">Where it goes</h2></div></div>
-{index_rows(APPS[:8])}
-<p style="margin-top:28px"><a class="more" href="products.html">All products and applications</a></p>
-</div></section>
-
-<section class="band tint"><div class="wrap">
-<div class="g7" style="margin-bottom:48px;row-gap:16px"><div class="rail"><span class="label">Our work</span></div><div class="body" style="display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap"><h2 class="d2">In people&rsquo;s homes</h2><a class="more" href="our-work.html">All projects</a></div></div>
+<div class="shead"><div class="h"><span class="label">Our work</span><h2 class="d2">In people&rsquo;s homes</h2></div><a class="more" href="our-work.html">All projects</a></div>
 <div class="pair">{project_card(proj[0], "a")}{project_card(proj[1], "b", 1000)}</div>
 </div></section>
 
-<section class="band"><div class="wrap">
-<div class="g7" style="margin-bottom:48px;row-gap:16px"><div class="rail"><span class="label">Shop</span></div><div class="body" style="display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap"><h2 class="d2">Made to order, priced online</h2><a class="more" href="shop.html">Visit the shop</a></div></div>
+<section class="band tint"><div class="wrap">
+<div class="shead"><div class="h"><span class="label">Shop</span><h2 class="d2">Made to order, priced online</h2></div><a class="more" href="shop.html">Visit the shop</a></div>
 <div class="tiles">{"".join(product_tile(x) for x in best)}</div>
 </div></section>
 
 {cta_band()}
 
 <section class="band"><div class="wrap">
-<div class="g7" style="margin-bottom:32px"><div class="rail"><span class="label">Journal</span></div><div class="body"><h2 class="d3">Notes from the workshop</h2></div></div>
+<div class="shead"><div class="h"><span class="label">Journal</span><h2 class="d3">Notes from the workshop</h2></div><a class="more" href="journal.html">Read the journal</a></div>
 <div class="rows">{"".join(f'<a class="jrow" href="{p["slug"]}.html"><span class="dt">{fmt_date(p.get("date"))}</span><span class="tt">{esc(h1_of(p, clean_blocks(p)))}</span><span class="ar">→</span></a>' for p in posts)}</div>
-<p style="margin-top:28px"><a class="more" href="journal.html">Read the journal</a></p>
 </div></section>'''
-    page('index', 'Halman Thompson', 'Bespoke brass, copper, zinc and steel splashbacks, worktops, tables and wall panels, aged by hand and made to order in Newcastle upon Tyne.', 'index', body)
+    page('index', 'Halman Thompson · Bespoke metal creations', 'Bespoke brass, copper, zinc and steel splashbacks, worktops, tables and wall panels, aged by hand and made to order in Newcastle upon Tyne.', 'index', body)
 
 def build_finishes():
     p = P.get('finishes')
@@ -803,6 +833,7 @@ def main():
     open(os.path.join(BUILD, 'artifact-index.html'), 'w').write(frag)
     shutil.copy(os.path.join(BUILD, 'site.css'), OUT)
     shutil.copy(os.path.join(BUILD, 'site.js'), OUT)
+    shutil.copytree(os.path.join(BUILD, 'brand'), os.path.join(OUT, 'brand'))
     n = process_images()
     # broken internal links
     names = set(os.listdir(OUT))
