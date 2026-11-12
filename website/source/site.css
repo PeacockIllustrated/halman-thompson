@@ -773,3 +773,9 @@ details.faq p{padding-bottom:18px;max-width:62ch;color:var(--ink2)}
 .prose{grid-template-columns:minmax(0,1fr)}
 .fc-np{grid-template-columns:minmax(0,1fr)}
 .fcards{grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr))}
+/* splash: opacity and clip only, so nothing reflows or shimmers while it plays */
+@keyframes sp-word{from{opacity:0}to{opacity:1}}
+@keyframes sp-crown{from{clip-path:inset(0 50% 0 50%)}to{clip-path:inset(0 0 0 0)}}
+@keyframes sp-fill{to{fill:#3a3531;stroke:transparent}}
+.sp-crown{transform:none}
+.splash-mark,.splash-word{transform:translateZ(0);backface-visibility:hidden}
