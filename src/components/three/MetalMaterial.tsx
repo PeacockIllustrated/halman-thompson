@@ -185,51 +185,83 @@ function generatePBRMaps(
 
 // ── Textured metal (PBR from albedo photograph) ─────────────────
 
+/**
+ * PBR maps are derived on the CPU from the albedo photo, which is expensive
+ * (seconds on slower devices). A worktop renders the same finish on many
+ * meshes — slab, returns, upstand, corners — so derive once per finish and
+ * share the textures between every material that uses it.
+ */
+const pbrCache = new Map<string, Promise<PBRMaps>>();
+
+function loadPBRMaps(albedoUrl: string, realWorldWidthMm: number): Promise<PBRMaps> {
+  const repeat = 1 / ((realWorldWidthMm || 500) * 0.01);
+  const key = `${albedoUrl}|${repeat}`;
+  const cached = pbrCache.get(key);
+  if (cached) return cached;
+
+  const promise = new Promise<PBRMaps>((resolve, reject) => {
+    new THREE.TextureLoader().load(
+      albedoUrl,
+      (albedo) => {
+        albedo.wrapS = albedo.wrapT = THREE.RepeatWrapping;
+        albedo.colorSpace = THREE.SRGBColorSpace;
+        albedo.anisotropy = 16;
+        albedo.minFilter = THREE.LinearMipmapLinearFilter;
+        albedo.magFilter = THREE.LinearFilter;
+        albedo.generateMipmaps = true;
+
+        // Scale texture repeat so it tiles at the real-world physical size.
+        // ExtrudeGeometry UVs use raw scene-unit coordinates, so repeat
+        // = 1 / (realWorldMm * SCALE) maps the texture to the correct size.
+        albedo.repeat.set(repeat, repeat);
+        // Geometry UVs are centred on the piece, so shift the tile by half
+        // to keep the photo's edge seam off the middle of the worktop.
+        albedo.offset.set(0.5, 0.5);
+
+        const derived = generatePBRMaps(albedo.image as HTMLImageElement, 1.5);
+        derived.normal.repeat.set(repeat, repeat);
+        derived.roughness.repeat.set(repeat, repeat);
+        derived.metalness.repeat.set(repeat, repeat);
+        for (const t of [derived.normal, derived.roughness, derived.metalness]) t.offset.set(0.5, 0.5);
+
+        resolve({ albedo, ...derived });
+      },
+      undefined,
+      (err) => {
+        pbrCache.delete(key);
+        reject(err);
+      }
+    );
+  });
+  pbrCache.set(key, promise);
+  return promise;
+}
+
 function TexturedMetal({ finish, doubleSide }: { finish: Finish; doubleSide?: boolean }) {
   const [maps, setMaps] = useState<PBRMaps | null>(null);
   const setTextureLoading = useConfiguratorStore((s) => s.setTextureLoading);
+  const realWorldWidthMm = finish.textures.realWorldWidthMm;
 
   useEffect(() => {
     let cancelled = false;
     setMaps(null);
     setTextureLoading(true);
-    const loader = new THREE.TextureLoader();
 
-    loader.load(finish.textures.albedo, (albedo) => {
-      if (cancelled) return;
-
-      albedo.wrapS = albedo.wrapT = THREE.RepeatWrapping;
-      albedo.colorSpace = THREE.SRGBColorSpace;
-      albedo.anisotropy = 16;
-      albedo.minFilter = THREE.LinearMipmapLinearFilter;
-      albedo.magFilter = THREE.LinearFilter;
-      albedo.generateMipmaps = true;
-
-      // Scale texture repeat so it tiles at the real-world physical size.
-      // ExtrudeGeometry UVs use raw scene-unit coordinates, so repeat
-      // = 1 / (realWorldMm * SCALE) maps the texture to the correct size.
-      const repeat =
-        1 / ((finish.textures.realWorldWidthMm || 500) * 0.01);
-      albedo.repeat.set(repeat, repeat);
-
-      const derived = generatePBRMaps(
-        albedo.image as HTMLImageElement,
-        1.5
-      );
-
-      // Apply same repeat to all derived PBR maps
-      derived.normal.repeat.set(repeat, repeat);
-      derived.roughness.repeat.set(repeat, repeat);
-      derived.metalness.repeat.set(repeat, repeat);
-
-      setMaps({ albedo, ...derived });
-      setTextureLoading(false);
-    });
+    loadPBRMaps(finish.textures.albedo, realWorldWidthMm)
+      .then((loaded) => {
+        if (cancelled) return;
+        setMaps(loaded);
+        setTextureLoading(false);
+      })
+      .catch(() => {
+        // Fall back to the procedural material on load failure
+        if (!cancelled) setTextureLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [finish.textures.albedo, setTextureLoading]);
+  }, [finish.textures.albedo, realWorldWidthMm, setTextureLoading]);
 
   const material = useMemo(() => {
     if (!maps) return null;
@@ -237,7 +269,7 @@ function TexturedMetal({ finish, doubleSide }: { finish: Finish; doubleSide?: bo
     return new THREE.MeshStandardMaterial({
       map: maps.albedo,
       normalMap: maps.normal,
-      normalScale: new THREE.Vector2(0.8, 0.8),
+      normalScale: new THREE.Vector2(0.45, 0.45), // hand-aged sheet is flat; keep relief subtle
       roughnessMap: maps.roughness,
       roughness: 1.0, // let the map fully control roughness
       metalnessMap: maps.metalness,
