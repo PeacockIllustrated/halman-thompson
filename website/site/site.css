@@ -779,3 +779,12 @@ details.faq p{padding-bottom:18px;max-width:62ch;color:var(--ink2)}
 @keyframes sp-fill{to{fill:#3a3531;stroke:transparent}}
 .sp-crown{transform:none}
 .splash-mark,.splash-word{transform:translateZ(0);backface-visibility:hidden}
+
+/* 19. The HT monogram set into the copper on the home hero, like an etched mark */
+.hero-mark{position:absolute;left:50%;top:34%;z-index:1;width:clamp(84px,8.5vw,140px);transform:translate(-50%,-50%);pointer-events:none;opacity:0;animation:hm-in 1.6s var(--settle) .4s forwards}
+.hero-mark svg{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 1px 0 rgba(255,236,214,.35)) drop-shadow(0 -1px 1px rgba(40,22,10,.55)) drop-shadow(0 10px 30px rgba(20,12,6,.35))}
+.hm-h{fill:rgba(249,244,236,.9)}
+.hm-b{fill:#D9C3A3}
+@keyframes hm-in{from{opacity:0;clip-path:inset(0 0 100% 0)}to{opacity:.92;clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.hero-mark{animation:none;opacity:.92}}
+@media (max-width:600px){.hero-mark{top:24%;width:72px}}
