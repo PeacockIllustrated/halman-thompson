@@ -20,3 +20,18 @@ v1 used its own palette (verdigris on stone) and its own typefaces. Tom rejected
 
 ## Review
 Every change is checked in Chromium over HTTP at 1440×900 and 390×844, screen by screen as a visitor would scroll. The script is `source/folds.js` and the server is `source/serve.py`.
+
+## Round 3: bespoke layouts, motion and the worktop builder
+
+- **No empty left rail.** Headings sit above their content on every page. Long text runs in a centred 720px column, and image sections alternate as split rows.
+- **Templates vary by content.** Articles mix split rows, wide figures, offset image pairs and numbered chapter grids, chosen from what each section holds. Text-only runs are broken up with photos of HT's own projects.
+- **Motion.** Sections fade and rise in, images wipe open, heroes have parallax, and journal posts show a reading bar. All of it switches off under `prefers-reduced-motion`.
+- **Legibility.** Kinfolk caps on photos get a 0.7px stroke, a soft shadow and darker overlays.
+- **Our work.** A moving reel, metal filter chips (with View Transitions where supported), an alternating 7/5/4-column editorial grid, and a second photo that wipes in on hover.
+- **Samples.** Equal-height cards. The price and Add button sit on the same baseline in every card, with a gloss/matte toggle.
+- **Worktop builder** (`source/worktop.js`, on /bespoke):
+  - Built on three.js 0.170, self-hosted in `site/vendor/`. It loads only when the builder scrolls into view and renders on demand.
+  - Shapes: straight, L-shape or island. Options: sink and hob cut-outs, an upstand, and gloss or matte lacquer.
+  - Each finish's surface maps are derived from its photographed swatch.
+  - Runs over 2,000mm show panel joints and a note.
+  - "Send this spec" fills the quote form. It does not show a price.

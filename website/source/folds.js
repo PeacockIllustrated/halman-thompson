@@ -18,7 +18,7 @@ const { chromium } = require('playwright');
       let i = 0;
       for (let y = 0; y < H; y += h - 60, i++) {
         await p.evaluate(y => scrollTo(0, y), y);
-        await p.waitForTimeout(450);
+        await p.waitForTimeout(1300);
         await p.screenshot({ path: `${out}/${(pg || 'index').replace(/\//g, '_')}-${tag}-${String(i).padStart(2, '0')}.png` });
       }
       console.log(tag, pg || 'index', 'height', H, 'folds', i);
